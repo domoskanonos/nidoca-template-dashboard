@@ -1,1 +1,10 @@
 import './page-dashboard';
+import './page-settings';
+import './page-register';
+import './page-register-ok';
+import './page-login';
+import './page-logout';
+import './page-change-password';
+import './page-reset-password';
+import './page-terms-of-use';
+import './page-default';

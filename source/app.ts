@@ -1,7 +1,5 @@
 import {customElement, TemplateResult} from 'lit-element';
 import {
-  HttpResponseCodeInterceptor,
-  HttpResponseCode,
   I18nService,
   WebApiService,
   HttpClientService,
@@ -11,6 +9,9 @@ import {
   SecureService,
 } from '@domoskanonos/frontend-basis';
 import {NidocaAbstractApp} from '@domoskanonos/nidoca-core';
+import {NidocaI18NSelector} from '@domoskanonos/nidoca-app';
+
+import {HttpResponseCodeInterceptor, HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {PageService} from './service/page-service';
 
 @customElement('app-root')
@@ -21,12 +22,12 @@ export class App extends NidocaAbstractApp {
 
   protected registerEventListener(): void {
     super.registerEventListener();
-    window.addEventListener('nidoca-event-i18n-selector-change-language', (event) => {
+    window.addEventListener('nidoca-event-i18n-selector-change-language', event => {
       if (event instanceof CustomEvent) {
         let customEvent: CustomEvent = event;
         let language: string = customEvent.detail;
         console.log('language changed %s, refresh gui...', language);
-        this.requestUpdate().then((value) => {
+        this.requestUpdate().then(value => {
           console.log('update reqeuested:' + value);
         });
       }
