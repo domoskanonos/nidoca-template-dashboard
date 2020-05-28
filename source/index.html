@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8"/>
+   <meta
+           name="viewport"
+           content="width=device-width, initial-scale=1.0, user-scalable=no"
+   />
+   <title>nidoca-template</title>
+   <script>
+      window.onload = function () {
+         console.log('onload...');
+         let appRoot = document.createElement('app-root');
+         appRoot.preRender().then((value) => {
+            console.log('prerendering finished: ' + value);
+            document.body.append(appRoot);
+         });
+      };
+   </script>
+</head>
+<body></body>
+</html>

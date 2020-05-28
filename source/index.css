@@ -1,0 +1,84 @@
+@font-face {
+   font-family: 'Material Icons';
+   font-style: normal;
+   font-weight: 400;
+   src: url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+
+:root {
+   --space-little: 0.5vmin;
+   --space-small: 1vmin;
+   --space-medium: 1.5vmin;
+   --space-normal: 1.75vmin;
+   --space-big: 2vmin;
+   --space-max: 3vmin;
+
+   --font-family: 'Roboto', sans-serif;
+   --letter-spacing: 1pt;
+   --font-size: 1rem;
+
+   --menu-size: 275px;
+
+   --icon-size: 24px;
+   --icon-size-space: 48px;
+
+   --menubar-height: 60px;
+   --toolbar-height: 50px;
+
+   --line-height-small: 24px;
+   --line-height: 24px;
+   --line-height-large: 48px;
+   --line-height-big: 60px;
+   --line-height-massiv: 72px;
+
+   --app-color: #212121;
+   --app-color-background: #ffffff;
+
+   --app-color-primary: #ffffff;
+   --app-color-primary-background: #325278;
+   --app-color-primary-light: #ffffff;
+   --app-color-primary-background-light: #3f6796;
+   --app-color-primary-dark: #ffffff;
+   --app-color-primary-background-dark: #253d59;
+
+   --app-color-secondary: #ffffff;
+   --app-color-secondary-background: #DD6F00;
+   --app-color-secondary-light: #000000;
+   --app-color-secondary-background-light: #FF972F;
+   --app-color-secondary-dark: #ffffff;
+   --app-color-secondary-background-dark: #C66300;
+
+   --app-color-surface-background-dark: #d6d4d4;
+   --app-color-surface-background: #e3e3e3;
+   --app-color-surface-background-light: #f5f5f5;
+
+
+   --app-color-success: #22bb33;
+   --app-color-error: #b00020;
+   --color-warning: #ffcc00;
+   --app-color-info: #40a6ce;
+
+}
+
+* {
+   padding: 0;
+   margin: 0;
+   word-wrap: break-word;
+   box-sizing: border-box;
+   text-rendering: optimizelegibility;
+   font-family: var(--font-family);
+   font-size: var(--font-size);
+   fx-font-family: var(--font-family);
+   letter-spacing: var(--letter-spacing);
+   text-decoration: none;
+   line-height: normal;
+}
+
+@media (max-width: 768px),(orientation: portrait) {
+   :root {
+      --font-size: .875rem;
+   }
+
+   body {
+   }
+}
