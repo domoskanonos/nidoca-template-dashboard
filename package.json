@@ -33,7 +33,7 @@
     "lit-element": "^2.3.1",
     "@domoskanonos/frontend-basis": "^1.0.193",
     "@domoskanonos/nidoca-core": "^1.0.459",
-    "@domoskanonos/nidoca-app": "^1.0.154"
+    "@domoskanonos/nidoca-app": "^1.0.155"
   },
   "author": "",
   "license": "ISC",

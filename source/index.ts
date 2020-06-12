@@ -18,8 +18,6 @@ import './pages/page-reset-password';
 import './pages/page-terms-of-use';
 import './pages/page-default';
 
-import './nidoca-my-data';
-
 import './app';
 
 import './index.css';
