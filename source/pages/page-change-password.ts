@@ -7,9 +7,14 @@ import {HttpResponseCode} from '@domoskanonos/frontend-basis';
 export class PageChangePassword extends LitElement {
   render(): TemplateResult {
     return html`
+
+
       <nidoca-change-password
         @nidoca-event-change-password="${(event: CustomEvent) => this.changePassword(event)}"
       ></nidoca-change-password>
+      
+      
+      
     `;
   }
 

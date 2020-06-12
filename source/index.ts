@@ -7,15 +7,18 @@ I18nService.getUniqueInstance().addData(messageAppDE);
 I18nService.getUniqueInstance().addData(messageAppEN, LanguageKey.EN);
 
 import './pages/page-dashboard';
-import './page-settings';
-import './page-register';
-import './page-register-ok';
-import './page-login';
-import './page-logout';
-import './page-change-password';
-import './page-reset-password';
-import './page-terms-of-use';
-import './page-default';
+import './pages/page-settings';
+import './pages/page-register';
+import './pages/page-my-data';
+import './pages/page-register-ok';
+import './pages/page-login';
+import './pages/page-logout';
+import './pages/page-change-password';
+import './pages/page-reset-password';
+import './pages/page-terms-of-use';
+import './pages/page-default';
+
+import './nidoca-my-data';
 
 import './app';
 

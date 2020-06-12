@@ -74,6 +74,13 @@ export abstract class DefaultPage extends NidocaTemplate {
       ></nidoca-navigation-link>
       <nidoca-navigation-link
         slot="links"
+        icon="face"
+        text="${I18nService.getUniqueInstance().getValue('my-data')}"
+        href="mydata"
+        .rendered="${this.isAuthenticated}"
+      ></nidoca-navigation-link>
+      <nidoca-navigation-link
+        slot="links"
         icon="power_settings_new"
         text="${I18nService.getUniqueInstance().getValue('logout')}"
         href="logout"
