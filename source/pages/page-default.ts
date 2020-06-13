@@ -1,8 +1,10 @@
 import {html, property, TemplateResult} from 'lit-element';
 import {I18nService, SecureService} from '@domoskanonos/frontend-basis';
-import {TypographyType, NidocaTemplate} from '@domoskanonos/nidoca-core';
+import {TypographyType} from '@domoskanonos/nidoca-core';
+import {NidocaDashboardTemplate} from '../nidoca-template-dashboard';
+import {FlexJustifyContent} from '@domoskanonos/nidoca-core/lib';
 
-export abstract class DefaultPage extends NidocaTemplate {
+export abstract class DefaultPage extends NidocaDashboardTemplate {
   @property()
   isAuthenticated: boolean = SecureService.getUniqueInstance().isAuthenticated();
 
@@ -29,6 +31,19 @@ export abstract class DefaultPage extends NidocaTemplate {
         >${this.navigationTitle}</nidoca-typography
       >
     `;
+  }
+
+  getBottomContent(): TemplateResult {
+    return html`
+         <nidoca-icon
+        title="${I18nService.getUniqueInstance().getValue('menu')}"
+        slot="leftComponents"
+        icon="menu"
+        clickable="true"
+      ></nidoca-icon>
+         
+         
+         `;
   }
 
   getTopMainComponent(): TemplateResult {
