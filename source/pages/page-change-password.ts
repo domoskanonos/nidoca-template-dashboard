@@ -2,10 +2,11 @@ import {customElement, html, LitElement, TemplateResult} from 'lit-element';
 import {NidocaFormOutputData} from '@domoskanonos/nidoca-core';
 import {RouterService, SecureService} from '@domoskanonos/frontend-basis';
 import {HttpResponseCode} from '@domoskanonos/frontend-basis';
+import {DefaultPage} from './page-default';
 
 @customElement('page-change-password')
-export class PageChangePassword extends LitElement {
-  render(): TemplateResult {
+export class PageChangePassword extends DefaultPage {
+  getMainComponent(): TemplateResult {
     return html`
 
 

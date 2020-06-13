@@ -2,13 +2,14 @@ import {customElement, html, LitElement, property, TemplateResult} from 'lit-ele
 import {NidocaFormOutputData} from '@domoskanonos/nidoca-core';
 import {HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {SecureService, RouterService, I18nService} from '@domoskanonos/frontend-basis';
+import {DefaultPage} from './page-default';
 
 @customElement('page-register')
-export class PageRegister extends LitElement {
+export class PageRegister extends DefaultPage {
   @property()
   errorMessage: string = '';
 
-  render(): TemplateResult {
+  getMainComponent(): TemplateResult {
     return html`
       <nidoca-register
         @nidoca-event-register-submit="${(event: CustomEvent) => this.register(event)}"

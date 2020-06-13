@@ -3,9 +3,10 @@ import {NidocaFormOutputData} from '@domoskanonos/nidoca-core';
 import {HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {SecureService, RouterService, I18nService} from '@domoskanonos/frontend-basis';
 import {AuthUser} from '@domoskanonos/frontend-basis/lib';
+import {DefaultPage} from './page-default';
 
 @customElement('page-my-data')
-export class PageMyData extends LitElement {
+export class PageMyData extends DefaultPage {
 
   @property()
   errorMessage: string = '';
@@ -18,7 +19,7 @@ export class PageMyData extends LitElement {
     this.user = SecureService.getUniqueInstance().getAuthUser();
   }
 
-  render(): TemplateResult {
+  getMainComponent(): TemplateResult {
     return html`
       <nidoca-my-data
         @nidoca-event-my-data="${(event: CustomEvent) => this.register(event)}"

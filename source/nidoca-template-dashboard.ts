@@ -1,7 +1,7 @@
 import {css, html, property, query, TemplateResult, LitElement} from 'lit-element';
 
 import {BasicService} from '@domoskanonos/frontend-basis';
-import {BorderProperties, NavigationType, NidocaIcon} from '@domoskanonos/nidoca-core/lib';
+import {BorderProperties, NavigationType, NidocaIcon, VisibleType} from '@domoskanonos/nidoca-core/lib';
 
 export abstract class NidocaDashboardTemplate extends LitElement {
   static styles = css`
@@ -26,6 +26,8 @@ export abstract class NidocaDashboardTemplate extends LitElement {
       right: 0;
       bottom: 25%;
       z-index: 10;
+      background-color: var(--app-color-primary-background);
+      color: var(--app-color-primary);
     }
 
     #main {
@@ -112,6 +114,12 @@ export abstract class NidocaDashboardTemplate extends LitElement {
   @property()
   navigationType: string = NavigationType.DISMISSIBLE;
 
+  @property()
+  showTopBar: boolean = true;
+
+  @property()
+  showBottomBar: boolean = true;
+
   @query('#top')
   private topElement: HTMLElement | undefined;
   @query('#left')
@@ -124,17 +132,23 @@ export abstract class NidocaDashboardTemplate extends LitElement {
       <nidoca-navigation .closed="${this.navigationClosed}" navigationType="${this.navigationType}">
         ${this.getLeftNavigationContent()}
       </nidoca-navigation>
-      <top id="top" class="${this.menuCss}" @nidoca-event-icon-clicked="${this.menuItemClicked}">
-        <nidoca-border ..borderProperties="${[BorderProperties.BOTTOM]}">
-          ${this.getTopContent()}
-        </nidoca-border>
-      </top>
+
+      <nidoca-visible visibleType="${this.showTopBar ? VisibleType.NORMAL : VisibleType.HIDE}">
+        <top id="top" class="${this.menuCss}" @nidoca-event-icon-clicked="${this.menuItemClicked}">
+          <nidoca-border ..borderProperties="${[BorderProperties.BOTTOM]}">
+            ${this.getTopContent()}
+          </nidoca-border>
+        </top>
+      </nidoca-visible>
+
       <div id="main" class="${this.menuCss} body-opacity">
         ${this.getMainComponent()}
       </div>
-      <div id="bottom" class="${this.menuCss}">
-        ${this.getBottomContent()}
-      </div>
+      <nidoca-visible visibleType="${this.showBottomBar ? VisibleType.NORMAL : VisibleType.HIDE}">
+        <div id="bottom">
+          ${this.getBottomContent()}
+        </div></nidoca-visible
+      >
     `;
   }
 

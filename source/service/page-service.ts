@@ -55,6 +55,18 @@ export class PageService {
             navigationTitle="${I18nService.getUniqueInstance().getValue('reset_password')}"
           ></page-reset-password>
         `;
+      case 'upload':
+        return html`
+          <page-upload
+            navigationTitle="${I18nService.getUniqueInstance().getValue('upload')}"
+          ></page-upload>
+        `;
+      case 'cam':
+        return html`
+          <page-cam
+            navigationTitle="${I18nService.getUniqueInstance().getValue('cam')}"
+          ></page-cam>
+        `;
 
       case 'terms_of_use':
         return html`

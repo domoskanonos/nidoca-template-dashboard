@@ -11,10 +11,11 @@ import {
   TypographyType,
 } from '@domoskanonos/nidoca-core/lib';
 import {I18nService} from '@domoskanonos/frontend-basis/lib';
+import {DefaultPage} from './page-default';
 
 @customElement('page-terms-of-use')
-export class PageTermsOfUse extends LitElement {
-  render(): TemplateResult {
+export class PageTermsOfUse extends DefaultPage {
+  getMainComponent(): TemplateResult {
     return html`
       <nidoca-transition .transitionType="${TransitionType.CENTER}">
         <nidoca-flex-container

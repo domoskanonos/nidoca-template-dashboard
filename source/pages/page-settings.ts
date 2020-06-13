@@ -11,10 +11,11 @@ import {
 import {I18nService, LanguageKey} from '@domoskanonos/frontend-basis';
 import {DividerType} from '@domoskanonos/nidoca-core/lib';
 import {RouterService} from '@domoskanonos/frontend-basis/lib';
+import {DefaultPage} from './page-default';
 
 @customElement('page-settings')
-export class PageSettings extends LitElement {
-  render(): TemplateResult {
+export class PageSettings extends DefaultPage {
+  getMainComponent(): TemplateResult {
     return html`
       <nidoca-spacer spacerSize="${SpacerSize.LITTLE}"></nidoca-spacer>
       <nidoca-flex-container
