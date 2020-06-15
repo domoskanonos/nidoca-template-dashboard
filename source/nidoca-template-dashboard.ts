@@ -130,6 +130,7 @@ export abstract class NidocaDashboardTemplate extends LitElement {
   render() {
     return html`
       <nidoca-navigation .closed="${this.navigationClosed}" navigationType="${this.navigationType}">
+      
         ${this.getLeftNavigationContent()}
       </nidoca-navigation>
 

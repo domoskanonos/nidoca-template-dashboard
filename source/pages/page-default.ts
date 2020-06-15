@@ -9,6 +9,8 @@ import {
   FlexDirection,
   FlexJustifyContent,
   FlexWrap,
+  GridAlignItems,
+  GridJustifyItems, TypographyAlignment,
   VisibleType,
 } from '@domoskanonos/nidoca-core/lib';
 import {RouterService} from '@domoskanonos/frontend-basis/lib';
@@ -57,55 +59,11 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         .flexAlignItems="${FlexAlignItems.CENTER}"
         .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
       >
-        <nidoca-visible visibleType="${this.isAuthenticated ? VisibleType.NORMAL : VisibleType.HIDE}">
-          <nidoca-icon
-            icon="face"
-            title="${I18nService.getUniqueInstance().getValue('my-data')}"
-            clickable="true"
-            @nidoca-event-icon-clicked="${() => {
-              RouterService.getUniqueInstance().navigate('mydata');
-            }}"
-          ></nidoca-icon>
-        </nidoca-visible>
-        <nidoca-visible visibleType="${this.isAuthenticated ? VisibleType.HIDE : VisibleType.NORMAL}">
-          <nidoca-icon
-            icon="account_circle"
-            title="${I18nService.getUniqueInstance().getValue('login')}"
-            clickable="true"
-            @nidoca-event-icon-clicked="${() => {
-              RouterService.getUniqueInstance().navigate('login');
-            }}"
-          ></nidoca-icon>
-        </nidoca-visible>
-        <nidoca-visible visibleType="${this.isAuthenticated ? VisibleType.HIDE : VisibleType.NORMAL}">
-          <nidoca-icon
-            icon="how_to_reg"
-            title="${I18nService.getUniqueInstance().getValue('register')}"
-            clickable="true"
-            @nidoca-event-icon-clicked="${() => {
-              RouterService.getUniqueInstance().navigate('register');
-            }}"
-          ></nidoca-icon
-        ></nidoca-visible>
-        <nidoca-visible visibleType="${this.isAuthenticated ? VisibleType.HIDE : VisibleType.NORMAL}">
-          <nidoca-icon
-            icon="security"
-            title="${I18nService.getUniqueInstance().getValue('reset_password')}"
-            clickable="true"
-            @nidoca-event-icon-clicked="${() => {
-              RouterService.getUniqueInstance().navigate('resetpassword');
-            }}"
-          ></nidoca-icon
-        ></nidoca-visible>
-
-        <nidoca-icon
-          icon="backup"
-          title="${I18nService.getUniqueInstance().getValue('upload')}"
-          clickable="true"
-          @nidoca-event-icon-clicked="${() => {
-            RouterService.getUniqueInstance().navigate('upload');
-          }}"
-        ></nidoca-icon>
+        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'account_circle', 'login', 'login')}
+        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
+        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
+        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
+        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'backup', 'upload', 'upload')}
       </nidoca-flex-container>
     `;
   }
@@ -120,6 +78,19 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
 
   getLeftNavigationContent(): TemplateResult {
     return html`
+      <nidoca-box slot="links" height="var(--menubar-height)" width="100%">
+        <nidoca-grid-container
+          .gridJustifyItems="${GridJustifyItems.START}"
+          .gridAlignItems="${GridAlignItems.CENTER}"
+          .gridTemplateRows="${['1fr']}"
+          .gridTemplateColumns="${['auto', '1fr']}"
+          height="100%"
+        >
+          <nidoca-icon icon="dashboard" size="28" color="var(--app-color-secondary-background)"></nidoca-icon>
+          <nidoca-typography .typographyType="${TypographyType.H4}">Dashboard</nidoca-typography>
+        </nidoca-grid-container>
+      </nidoca-box>
+
       <nidoca-navigation-link
         slot="links"
         icon="dashboard"
@@ -191,5 +162,36 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         href="terms_of_use"
       ></nidoca-navigation-link>
     `;
+  }
+
+  private renderBottomContentMenuIcon(
+    isAuthenticated: boolean,
+    icon: string,
+    i18nKey: string,
+    href: string
+  ): TemplateResult {
+    return isAuthenticated
+      ? html`
+          <nidoca-grid-container
+            .gridJustifyItems="${GridJustifyItems.CENTER}"
+            .gridAlignItems="${GridAlignItems.CENTER}"
+            .gridTemplateRows="${['1fr', '1fr']}"
+            .gridTemplateColumns="${['auto']}"
+          >
+            <nidoca-icon
+              .withIconSpace="${false}"
+              icon="${icon}"
+              title="${I18nService.getUniqueInstance().getValue(i18nKey)}"
+              clickable="true"
+              @nidoca-event-icon-clicked="${() => {
+                RouterService.getUniqueInstance().navigate(href);
+              }}"
+            ></nidoca-icon>
+            <nidoca-typography .typographyType="${TypographyType.CAPTION}" typographyAlignment="${TypographyAlignment.CENTER}"
+              >${I18nService.getUniqueInstance().getValue(i18nKey)}</nidoca-typography
+            >
+          </nidoca-grid-container>
+        `
+      : html``;
   }
 }
