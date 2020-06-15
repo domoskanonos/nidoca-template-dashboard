@@ -11,9 +11,11 @@ import {
   FlexJustifyContent,
   FlexWrap,
   GridAlignItems,
-  GridJustifyItems, InputfieldMode,
+  GridJustifyItems,
+  InputfieldMode,
   InputfieldType,
   NidocaForm,
+  NidocaInputfield,
   ProgressType,
   SpacerAlignment,
   SpacerSize,
@@ -22,6 +24,15 @@ import {
   VisibleType,
 } from '@domoskanonos/nidoca-core/lib';
 import {BasicService, HttpClientService} from '@domoskanonos/frontend-basis/lib';
+
+export enum UploadFileType {
+  ALL = 'all',
+  PDF = 'pdf',
+  IMG = 'img',
+  JPEG = 'jpg',
+  PNG = 'png',
+  GIF = 'gif',
+}
 
 @customElement('page-upload')
 export class PageUpload extends DefaultPage {
@@ -34,8 +45,17 @@ export class PageUpload extends DefaultPage {
   @query('#upload-form')
   formComponent: NidocaForm | undefined;
 
+  @query('#upload-input-element')
+  inputElement: NidocaInputfield | undefined;
+
   @property()
   files: File[] = [];
+
+  @property()
+  maxFileSize: number = 1024;
+
+  @property()
+  fileTypes: UploadFileType[] = [UploadFileType.ALL];
 
   @property()
   headers: any[] = [
@@ -60,7 +80,7 @@ export class PageUpload extends DefaultPage {
       <nidoca-transition .transitionType="${TransitionType.CENTER}">
         <nidoca-grid-container
           .gridJustifyItems="${GridJustifyItems.CENTER}"
-          .gridAlignItems="${GridAlignItems.CENTER}"
+          .gridAlignItems="${GridAlignItems.START}"
           .gridTemplateRows="${['1fr']}"
           .gridTemplateColumns="${['1fr']}"
           height="100vh"
@@ -83,6 +103,10 @@ export class PageUpload extends DefaultPage {
               size="128"
               icon="backup"
               .withIconSpace="${false}"
+              clickable="true"
+              @nidoca-event-icon-clicked="${() => {
+                this.inputElement?.inputElemet?.click();
+              }}"
             ></nidoca-icon>
             <nidoca-spacer
               style="text-align:center;"
@@ -94,26 +118,34 @@ export class PageUpload extends DefaultPage {
               >
             </nidoca-spacer>
             <nidoca-form id="upload-form">
-              <nidoca-inputfield 
+              <nidoca-inputfield
+                id="upload-input-element"
                 name="upload"
                 .multiple="${true}"
                 .inputfieldType="${InputfieldType.FILE}"
                 .inputfieldMode="${InputfieldMode.CLEAN}"
                 required="true"
+                accept="image/*"
                 @nidoca-event-inputfield-change="${() => this.uploadChanged()}"
+                label="${I18nService.getUniqueInstance().getValue('nidoca-upload-upload-label-text')}"
                 assistiveText="${I18nService.getUniqueInstance().getValue('nidoca-upload-upload-assistive-text')}"
-                infoText="${I18nService.getUniqueInstance().getValue('nidoca-upload-upload-info-text')}"
+                infoText="${I18nService.getUniqueInstance().getValue(
+                  'nidoca-upload-upload-info-text'
+                )} ${this.getAllowedFileTypesI18n()}"
               ></nidoca-inputfield>
 
-              <nidoca-button
-                text="${I18nService.getUniqueInstance().getValue('nidoca-upload-submit')}"
-                @nidoca-event-button-clicked="${(event: CustomEvent) => this.upload(event)}"
-              ></nidoca-button>
-
-              <nidoca-button
-                text="${I18nService.getUniqueInstance().getValue('nidoca-upload-cancel-submit')}"
-                @nidoca-event-button-clicked="${() => this.cancelUpload()}"
-              ></nidoca-button>
+              <nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" .spacerAlignment="${SpacerAlignment.VERTICAL}">
+                <nidoca-button
+                  text="${I18nService.getUniqueInstance().getValue('nidoca-upload-submit')}"
+                  @nidoca-event-button-clicked="${(event: CustomEvent) => this.upload(event)}"
+                ></nidoca-button>
+              </nidoca-spacer>
+              <nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" .spacerAlignment="${SpacerAlignment.VERTICAL}">
+                <nidoca-button
+                  text="${I18nService.getUniqueInstance().getValue('nidoca-upload-cancel-submit')}"
+                  @nidoca-event-button-clicked="${() => this.cancelUpload()}"
+                ></nidoca-button>
+              </nidoca-spacer>
 
               <nidoca-visible visibleType="${this.progress ? VisibleType.NORMAL : VisibleType.HIDE}">
                 <nidoca-progress progressType="${ProgressType.PROGRESS_CIRCULAR}"></nidoca-progress>
@@ -158,6 +190,9 @@ export class PageUpload extends DefaultPage {
   }
 
   private upload(event: CustomEvent) {
+
+    this.errorMessage = '';
+
     this.progress = true;
     let data: any = event.detail;
     console.log('sdsd');
@@ -186,5 +221,19 @@ export class PageUpload extends DefaultPage {
 
   private cancelUpload() {
     this.rows = [[]];
+  }
+
+  private getAllowedFileTypesI18n(): string {
+    let i18nFileTypesString: string = '';
+    for (let i = 0; i < this.fileTypes.length; i++) {
+      let value = this.fileTypes[i];
+      if (i > 0) {
+        i18nFileTypesString += i18nFileTypesString.concat(', ');
+      }
+      i18nFileTypesString += i18nFileTypesString.concat(
+        I18nService.getUniqueInstance().getValue('nidoca-upload-filetype-'.concat(value))
+      );
+    }
+    return i18nFileTypesString;
   }
 }
