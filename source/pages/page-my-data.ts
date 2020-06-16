@@ -2,12 +2,12 @@ import {customElement, html, LitElement, property, PropertyValues, TemplateResul
 import {NidocaFormOutputData} from '@domoskanonos/nidoca-core';
 import {HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {SecureService, RouterService, I18nService} from '@domoskanonos/frontend-basis';
-import {AuthUser} from '@domoskanonos/frontend-basis/lib';
+import {AuthUser, HttpClientService} from '@domoskanonos/frontend-basis/lib';
 import {DefaultPage} from './page-default';
+import {HttpClientRequest} from '@domoskanonos/frontend-basis/lib/http-client-service';
 
 @customElement('page-my-data')
 export class PageMyData extends DefaultPage {
-
   @property()
   errorMessage: string = '';
 
@@ -22,7 +22,7 @@ export class PageMyData extends DefaultPage {
   getMainComponent(): TemplateResult {
     return html`
       <nidoca-my-data
-        @nidoca-event-my-data="${(event: CustomEvent) => this.register(event)}"
+        @nidoca-event-my-data-submit="${(event: CustomEvent) => this.register(event)}"
         errorMessage="${this.errorMessage}"
         .user="${this.user}"
       ></nidoca-my-data>
@@ -31,8 +31,11 @@ export class PageMyData extends DefaultPage {
 
   private register(event: CustomEvent) {
     let formOutputData: NidocaFormOutputData = event.detail;
+    let request: HttpClientRequest = HttpClientService.getDefaultPutRequest();
+    request.path = '/SYSTEM/AUTH/UPDATE_USER/'.concat(formOutputData.jsonObject.id);
+    request.body = JSON.stringify(formOutputData.jsonObject);
     SecureService.getUniqueInstance()
-      .sendFormData('/SYSTEM/AUTH/REGISTER', formOutputData.formData, null)
+      .request(request)
       .then(response => {
         if (response.status == HttpResponseCode.OK) {
           RouterService.getUniqueInstance().navigate('registerok');

@@ -225,7 +225,7 @@ export class PageUpload extends DefaultPage {
       let outputData: NidocaFormOutputData | null = this.formComponent.getOutputData();
       let files: FileList | null = outputData.jsonObject.upload;
       HttpClientService.getUniqueInstance()
-        .uploadFiles('/SYSTEM/STORAGE', files)
+        .uploadFiles('/SYSTEM/STORAGE/UPLOAD', files)
         .then(value => {
           console.log('files uplaoded: ' + value);
           this.progress = false;
