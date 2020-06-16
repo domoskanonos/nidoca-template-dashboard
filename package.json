@@ -31,9 +31,9 @@
   },
   "dependencies": {
     "lit-element": "^2.3.1",
-    "@domoskanonos/frontend-basis": "^1.0.195",
+    "@domoskanonos/frontend-basis": "^1.0.196",
     "@domoskanonos/nidoca-core": "^1.0.474",
-    "@domoskanonos/nidoca-app": "^1.0.157"
+    "@domoskanonos/nidoca-app": "^1.0.160"
   },
   "author": "",
   "license": "ISC",

@@ -2,7 +2,7 @@ import {customElement, html, LitElement, property, PropertyValues, TemplateResul
 import {NidocaFormOutputData} from '@domoskanonos/nidoca-core';
 import {HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {SecureService, RouterService, I18nService} from '@domoskanonos/frontend-basis';
-import {AuthUser, HttpClientService} from '@domoskanonos/frontend-basis/lib';
+import {AuthUser, HttpClientService, WebApiService} from '@domoskanonos/frontend-basis/lib';
 import {DefaultPage} from './page-default';
 import {HttpClientRequest} from '@domoskanonos/frontend-basis/lib/http-client-service';
 
@@ -22,30 +22,38 @@ export class PageMyData extends DefaultPage {
   getMainComponent(): TemplateResult {
     return html`
       <nidoca-my-data
-        @nidoca-event-my-data-submit="${(event: CustomEvent) => this.register(event)}"
+        @nidoca-event-my-data-submit="${(event: CustomEvent) => this.updateUser(event)}"
         errorMessage="${this.errorMessage}"
         .user="${this.user}"
       ></nidoca-my-data>
     `;
   }
 
-  private register(event: CustomEvent) {
+  private updateUser(event: CustomEvent) {
     let formOutputData: NidocaFormOutputData = event.detail;
+    this.user = formOutputData.jsonObject;
     let request: HttpClientRequest = HttpClientService.getDefaultPutRequest();
     request.path = '/SYSTEM/AUTH/UPDATE_USER/'.concat(formOutputData.jsonObject.id);
-    request.body = JSON.stringify(formOutputData.jsonObject);
+    request.body = JSON.stringify(this.user);
     SecureService.getUniqueInstance()
       .request(request)
       .then(response => {
         if (response.status == HttpResponseCode.OK) {
-          RouterService.getUniqueInstance().navigate('registerok');
+          SecureService.getUniqueInstance().setAuthUser(this.user);
+          WebApiService.getUniqueInstance().notify(
+            I18nService.getUniqueInstance().getValue('my-data-notification-update-ok-header'),
+            {
+              body: I18nService.getUniqueInstance().getValue('my-data-notification-update-ok-body'),
+              icon: '',
+            }
+          );
         } else {
-          this.errorMessage = I18nService.getUniqueInstance().getValue('nidoca-nidoca-register-error');
+          this.errorMessage = I18nService.getUniqueInstance().getValue('my-data-update-error');
         }
       })
       .catch(reason => {
-        console.error('error register user: '.concat(reason));
-        this.errorMessage = I18nService.getUniqueInstance().getValue('nidoca-nidoca-register-error');
+        console.error('error update user: '.concat(reason));
+        this.errorMessage = I18nService.getUniqueInstance().getValue('my-data-update-error');
       });
   }
 }
