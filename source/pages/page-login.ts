@@ -16,14 +16,7 @@ export class PageLogin extends DefaultPage {
     super();
     this.showTopBar = false;
 
-    if (navigator.credentials) {
-      // @ts-ignore
-      const cred = navigator.credentials.get({password: true});
-      cred.then(value => {
-        // @ts-ignore
-        console.log('sfdsfdfdfdf ' + value.password);
-      });
-    }
+
 
   }
 
@@ -65,16 +58,7 @@ export class PageLogin extends DefaultPage {
         let authUser = SecureService.getUniqueInstance().getAuthUser();
 
         if (authUser != null) {
-          // @ts-ignore
-          let cred = new PasswordCredential({
-            id: authUser.email,
-            password: formOutputData.jsonObject.password,
-            name: authUser.firstName.concat(' ').concat(authUser.lastName),
-          });
-          //iconURL:"user.avatar",
-          navigator.credentials.store(cred).then(value => {
-            console.log('successfully store password for user: ' + value);
-          });
+
         }
 
 

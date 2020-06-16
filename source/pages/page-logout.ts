@@ -20,8 +20,8 @@ export class PageLogout extends DefaultPage {
         flexItemBasisValue="100%"
       >
         <nidoca-authentication
-          @nidoca-event-authentication-event-login="${(event: CustomEvent) => this.login(event)}"
-          @nidoca-event-authentication-event-logout="${() => this.logout()}"
+          @nidoca-event-authentication-login="${(event: CustomEvent) => this.login(event)}"
+          @nidoca-event-authentication-logout="${() => this.logout()}"
           .isAuthenticated="${this.isAuthenticated}"
         ></nidoca-authentication>
       </nidoca-flex-container>

@@ -49,8 +49,8 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
       <nidoca-flex-container
         .flexContainerProperties="${[
           FlexContainerProperties.CONTAINER_WIDTH_100,
-          FlexContainerProperties.CONTAINER_HEIGHT_100,
-        ]}"
+      FlexContainerProperties.CONTAINER_HEIGHT_100,
+    ]}"
         .flexItemProperties="${[]}"
         flexItemBasisValue="auto"
         .flexDirection="${FlexDirection.COLUMN}"
@@ -59,11 +59,13 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         .flexAlignItems="${FlexAlignItems.CENTER}"
         .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
       >
-        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'account_circle', 'login', 'login')}
-        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
+        ${this.renderBottomContentMenuIcon(true, 'dashboard', 'home', 'home')}
+        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'account_circle', 'login', 'login')}
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
-        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'backup', 'upload', 'upload')}
+        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
+        ${this.renderBottomContentMenuIcon(true, 'backup', 'upload', 'upload')}
+        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'power_settings_new', 'logout', 'logout')}
       </nidoca-flex-container>
     `;
   }
