@@ -6,6 +6,8 @@ import {I18nService, LanguageKey} from '@domoskanonos/frontend-basis';
 I18nService.getUniqueInstance().addData(messageAppDE);
 I18nService.getUniqueInstance().addData(messageAppEN, LanguageKey.EN);
 
+import './components/user-table';
+
 import './pages/page-dashboard';
 import './pages/page-settings';
 import './pages/page-register';
@@ -13,6 +15,7 @@ import './pages/page-my-data';
 import './pages/page-register-ok';
 import './pages/page-login';
 import './pages/page-logout';
+import './pages/page-users';
 import './pages/page-upload';
 import './pages/page-change-password';
 import './pages/page-reset-password';

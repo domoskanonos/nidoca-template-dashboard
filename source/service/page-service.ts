@@ -61,6 +61,10 @@ export class PageService {
             navigationTitle="${I18nService.getUniqueInstance().getValue('upload')}"
           ></page-upload>
         `;
+      case 'users':
+        return html`
+          <page-users></page-users>
+        `;
       case 'cam':
         return html`
           <page-cam
