@@ -60,7 +60,7 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
       >
         ${this.renderBottomContentMenuIcon(true, 'dashboard', 'home', 'home')}
-        ${this.renderBottomContentMenuIcon(true, 'user', 'users', 'users')}
+        ${this.renderBottomContentMenuIcon(true, 'people', 'users', 'users')}
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'account_circle', 'login', 'login')}
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}

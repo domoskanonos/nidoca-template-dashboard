@@ -1,8 +1,29 @@
 import {css, html, property, query, TemplateResult, LitElement} from 'lit-element';
 import {guard} from 'lit-html/directives/guard';
 import {repeat} from 'lit-html/directives/repeat';
-import {AuthUser, BasicService, I18nService, PageableContainer} from '@domoskanonos/frontend-basis/lib';
-import {GridAlignItems, GridJustifyItems} from '@domoskanonos/nidoca-core/lib';
+import {BasicService, I18nService, PageableContainer} from '@domoskanonos/frontend-basis/lib';
+import {
+  BorderProperties,
+  BorderSize,
+  FlexAlignContent,
+  FlexAlignItems,
+  FlexContainerProperties,
+  FlexDirection,
+  FlexJustifyContent,
+  FlexWrap,
+  GridAlignItems,
+  GridJustifyItems,
+  ShadowType,
+  SpacerAlignment,
+  SpacerSize,
+  TypographyType,
+} from '@domoskanonos/nidoca-core/lib';
+
+export interface NidocaEventComplexTableRow {
+  rowIndex: number;
+  columnIndex: number;
+  row: ComplexTableRow;
+}
 
 export class ComplexTableRow {
   model: any;
@@ -39,7 +60,19 @@ export class TableContent {
 }
 
 export abstract class NidocaComplexTable<T> extends LitElement {
-  static styles = css``;
+  static styles = css`
+    .header,
+    .column {
+      width: 100%;
+      height: 100%;
+    }
+    .column {
+      cursor: pointer;
+    }
+    .odd {
+      background-color: var(--app-color-surface-background-light);
+    }
+  `;
 
   @property()
   rows: ComplexTableRow[] = [];
@@ -102,7 +135,13 @@ export abstract class NidocaComplexTable<T> extends LitElement {
     let rowModel: any[] = [];
     Object.keys(model).forEach((key: string) => {
       if (!this.getIgnoredKeys().includes(key)) {
-        rowModel.push(BasicService.getUniqueInstance().beautifyText(model[key]));
+        rowModel.push(
+          html`
+            <nidoca-typography .typographyType="${TypographyType.BODY2}"
+              >${BasicService.getUniqueInstance().beautifyText(model[key])}</nidoca-typography
+            >
+          `
+        );
       }
     });
     return rowModel;
@@ -126,58 +165,99 @@ export abstract class NidocaComplexTable<T> extends LitElement {
 
   render() {
     return html`
-      Seite ${String(this.page + 1)} von ${this.totalPages} ${this.renderPaging()}
-
-      <nidoca-grid-container
-        .gridJustifyItems="${GridJustifyItems.START}"
-        .gridAlignItems="${GridAlignItems.CENTER}"
-        .gridTemplateRows="${this.gridTemplateRows}"
-        .gridTemplateColumns="${this.gridTemplateColumns}"
+      <nidoca-flex-container
+        .flexContainerProperties="${[
+          FlexContainerProperties.CONTAINER_WIDTH_100,
+          FlexContainerProperties.CONTAINER_HEIGHT_100,
+        ]}"
+        .flexItemProperties="${[]}"
+        flexItemBasisValue="auto"
+        .flexDirection="${FlexDirection.COLUMN}"
+        .flexWrap="${FlexWrap.WRAP}"
+        .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
+        .flexAlignItems="${FlexAlignItems.CENTER}"
+        .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
       >
-        ${guard(
-      [this.keys],
-      () =>
-        html`
-              ${repeat(
-          this.keys,
-          header => html`
-                  <span class="head">
-                    ${header}
-                  </span>
-                `,
-        )}
-            `,
-    )}
-        ${guard(
-      [this.rows],
-      () =>
-        html`
-              ${repeat(
-          this.rows,
-          (row: ComplexTableRow, rowIndex: number) => html`
-                  ${guard(
-            row.rowModel,
-            () =>
-              html`
-                        ${repeat(
-                row.rowModel,
-                (column, columnIndex) => html`
-                            <span
-                              @click="${() => {
-                  this.columnClicked(rowIndex, columnIndex);
-                }}"
-                            >
-                              ${column}
-                            </span>
-                          `,
-              )}
-                      `,
-          )}
-                `,
-        )}
-            `,
-    )}
-      </nidoca-grid-container>
+        <nidoca-border
+          .borderProperties="${[BorderProperties.ALL]}"
+          .borderSize="${BorderSize.THIN}"
+          .shadowType="${ShadowType.NONE}"
+        >
+          <nidoca-grid-container
+            .gridJustifyItems="${GridJustifyItems.START}"
+            .gridAlignItems="${GridAlignItems.CENTER}"
+            .gridTemplateRows="${this.gridTemplateRows}"
+            .gridTemplateColumns="${this.gridTemplateColumns}"
+          >
+            ${guard(
+              [this.keys],
+              () =>
+                html`
+                  ${repeat(
+                    this.keys,
+                    header => html`
+                      <nidoca-grid-container
+                        height="100%"
+                        class="header"
+                        .gridJustifyItems="${GridJustifyItems.START}"
+                        .gridAlignItems="${GridAlignItems.CENTER}"
+                        .gridTemplateRows="${['1fr']}"
+                        .gridTemplateColumns="${['1fr']}"
+                        ><nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
+                          <nidoca-typography .typographyType="${TypographyType.OVERLINE}"
+                            >${header}</nidoca-typography
+                          ></nidoca-spacer
+                        >
+                      </nidoca-grid-container>
+                    `
+                  )}
+                `
+            )}
+            ${guard(
+              [this.rows],
+              () =>
+                html`
+                  ${repeat(
+                    this.rows,
+                    (row: ComplexTableRow, rowIndex: number) => html`
+                      ${guard(
+                        row.rowModel,
+                        () =>
+                          html`
+                            ${repeat(
+                              row.rowModel,
+                              (column, columnIndex) => html`
+                                <nidoca-grid-container
+                                  height="100%"
+                                  class="column${rowIndex % 2 == 0 ? ' odd' : ' even'}"
+                                  @click="${() => {
+                                    this.columnClicked(rowIndex, columnIndex);
+                                  }}"
+                                  .gridJustifyItems="${GridJustifyItems.START}"
+                                  .gridAlignItems="${GridAlignItems.CENTER}"
+                                  .gridTemplateRows="${['1fr']}"
+                                  .gridTemplateColumns="${['1fr']}"
+                                >
+                                  <nidoca-spacer
+                                    spacerSize="${SpacerSize.MEDIUM}"
+                                    spacerAlignment="${SpacerAlignment.BOTH}"
+                                  >
+                                    ${column}
+                                  </nidoca-spacer>
+                                </nidoca-grid-container>
+                              `
+                            )}
+                          `
+                      )}
+                    `
+                  )}
+                `
+            )}
+          </nidoca-grid-container></nidoca-border
+        >
+
+        ${this.renderPaging()}
+      </nidoca-flex-container>
     `;
   }
 
@@ -224,6 +304,13 @@ export abstract class NidocaComplexTable<T> extends LitElement {
 
   private columnClicked(rowIndex: number, columnIndex: number) {
     console.log('column clicked, row: %s, column: %s ', rowIndex, columnIndex);
+    BasicService.getUniqueInstance().dispatchSimpleCustomEvent(this, 'nidoca-event-complex-table-column-clicked', <
+      NidocaEventComplexTableRow
+    >{
+      columnIndex: columnIndex,
+      rowIndex: rowIndex,
+      row: this.rows[rowIndex],
+    });
   }
 
   private previousPage() {
@@ -241,110 +328,135 @@ export abstract class NidocaComplexTable<T> extends LitElement {
   }
 
   private getSelectablePages() {
-    let selectablePages: number[] = [
-      this.page - 5,
-      this.page - 4,
-      this.page - 3,
-      this.page - 2,
-      this.page - 1,
-      this.page,
-      this.page + 1,
-      this.page + 2,
-      this.page + 3,
-      this.page + 4,
-      this.page + 5,
-    ];
-    while (selectablePages[0] < 0) {
-      for (let index = 0; index < selectablePages.length; index++) {
-        let value = selectablePages[index];
-        selectablePages[index] = value + 1;
+    let selectablePages: number[] = [];
+    let size: number = 4;
+    let startPage: number = this.page - (this.page == this.totalPages - 1 ? size : size - 1);
+    for (let i = startPage; i < this.totalPages; i++) {
+      if (i >= 0 && selectablePages.length <= size) {
+        selectablePages.push(i);
       }
     }
-
-    for (let index = selectablePages.length; index > 0; index--) {
-      if (selectablePages[index] > this.totalPages - 1) {
-        selectablePages.splice(index, 1);
-      }
-    }
-
     return selectablePages;
   }
 
   private renderPaging(): TemplateResult {
     return html`
-      <nidoca-grid-container
-        .gridJustifyItems="${GridJustifyItems.CENTER}"
-        .gridAlignItems="${GridAlignItems.START}"
-        .gridTemplateRows="${['1fr']}"
-        .gridTemplateColumns="${[
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-      '1fr',
-    ]}"
-      >
-        <nidoca-icon
-          title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-first-page')}"
-          icon="first_page"
-          clickable="true"
-          @nidoca-event-icon-clicked="${() => {
-      this.page = 0;
-      this.search();
-    }}"
-          ;
-        ></nidoca-icon>
-        <nidoca-icon
-          title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-before-page')}"
-          icon="navigate_before"
-          clickable="true"
-          @nidoca-event-icon-clicked="${() => {
-      this.previousPage();
-    }}"
-          ;
-        ></nidoca-icon>
-        ${repeat(
-      this.selectablePages,
-      selectablePage => html`
-            <nidoca-button
-              @nidoca-event-button-clicked="${() => {
-        this.page = selectablePage;
-        this.search();
-      }}"
-              text="${selectablePage + 1}"
-            ></nidoca-button>
-          `,
-    )}
-        <nidoca-icon
-          title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-next-page')}"
-          icon="navigate_next"
-          clickable="true"
-          @nidoca-event-icon-clicked="${() => {
-      this.nextPage();
-    }}"
-          ;
-        ></nidoca-icon>
-        <nidoca-icon
-          title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-last-page')}"
-          icon="last_page"
-          clickable="true"
-          @nidoca-event-icon-clicked="${() => {
-      this.page = this.totalPages - 1;
-      this.search();
-    }}"
-          ;
-        ></nidoca-icon>
-      </nidoca-grid-container>
+      <nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.VERTICAL}">
+        <nidoca-border
+          .borderProperties="${[BorderProperties.ALL]}"
+          .borderSize="${BorderSize.THIN}"
+          .shadowType="${ShadowType.NONE}"
+        >
+          <nidoca-grid-container
+            .gridJustifyItems="${GridJustifyItems.CENTER}"
+            .gridAlignItems="${GridAlignItems.CENTER}"
+            .gridTemplateRows="${['auto']}"
+            .gridTemplateColumns="${[
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+              'auto',
+            ]}"
+          >
+            <nidoca-icon
+              title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-first-page')}"
+              icon="first_page"
+              clickable="true"
+              @nidoca-event-icon-clicked="${() => {
+                this.page = 0;
+                this.search();
+              }}"
+              ;
+            ></nidoca-icon>
+            <nidoca-border
+              .borderProperties="${[BorderProperties.LEFT]}"
+              .borderSize="${BorderSize.THIN}"
+              .shadowType="${ShadowType.NONE}"
+            >
+              <nidoca-icon
+                title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-before-page')}"
+                icon="navigate_before"
+                clickable="true"
+                @nidoca-event-icon-clicked="${() => {
+                  this.previousPage();
+                }}"
+                ;
+              ></nidoca-icon
+            ></nidoca-border>
+            ${repeat(
+              this.selectablePages,
+              selectablePage => html`
+                <nidoca-border
+                  style="${this.page == selectablePage
+                    ? 'background-color: var(--app-color-surface-background-light);'
+                    : ''}"
+                  .borderProperties="${[BorderProperties.LEFT]}"
+                  .borderSize="${BorderSize.THIN}"
+                  .shadowType="${ShadowType.NONE}"
+                >
+                  <nidoca-icon
+                    .clickable="${selectablePage > -1}"
+                    @nidoca-event-icon-clicked="${() => {
+                      this.page = selectablePage;
+                      this.search();
+                    }}"
+                    >${selectablePage + 1}</nidoca-icon
+                  ></nidoca-border
+                >
+              `
+            )}
+
+            <nidoca-border
+              .borderProperties="${[BorderProperties.LEFT]}"
+              .borderSize="${BorderSize.THIN}"
+              .shadowType="${ShadowType.NONE}"
+            >
+              <nidoca-icon>/${this.totalPages}</nidoca-icon></nidoca-border
+            >
+            <nidoca-border
+              .borderProperties="${[BorderProperties.LEFT]}"
+              .borderSize="${BorderSize.THIN}"
+              .shadowType="${ShadowType.NONE}"
+            >
+              <nidoca-icon
+                title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-next-page')}"
+                icon="navigate_next"
+                clickable="true"
+                @nidoca-event-icon-clicked="${() => {
+                  this.nextPage();
+                }}"
+                ;
+              ></nidoca-icon></nidoca-border
+            ><nidoca-border
+              .borderProperties="${[BorderProperties.LEFT]}"
+              .borderSize="${BorderSize.THIN}"
+              .shadowType="${ShadowType.NONE}"
+            >
+              <nidoca-icon
+                title="${I18nService.getUniqueInstance().getValue('nidoca-complex-table-last-page')}"
+                icon="last_page"
+                clickable="true"
+                @nidoca-event-icon-clicked="${() => {
+                  this.page = this.totalPages - 1;
+                  this.search();
+                }}"
+                ;
+              ></nidoca-icon
+            ></nidoca-border> </nidoca-grid-container
+        ></nidoca-border>
+      </nidoca-spacer>
     `;
   }
 }
