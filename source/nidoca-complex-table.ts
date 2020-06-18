@@ -1,7 +1,13 @@
 import {css, html, property, query, TemplateResult, LitElement} from 'lit-element';
 import {guard} from 'lit-html/directives/guard';
 import {repeat} from 'lit-html/directives/repeat';
-import {BasicService, I18nService, PageableContainer} from '@domoskanonos/frontend-basis/lib';
+import {
+  AuthUser,
+  BasicRemoteRepository,
+  BasicService,
+  I18nService,
+  PageableContainer,
+} from '@domoskanonos/frontend-basis/lib';
 import {
   BorderProperties,
   BorderSize,
@@ -13,11 +19,15 @@ import {
   FlexWrap,
   GridAlignItems,
   GridJustifyItems,
+  InputfieldType,
+  KeyValueData,
   ShadowType,
   SpacerAlignment,
   SpacerSize,
   TypographyType,
+  VisibleType,
 } from '@domoskanonos/nidoca-core/lib';
+import {AuthUserRemoteRepository} from './repo/auth-user-repository';
 
 export interface NidocaEventComplexTableRow {
   rowIndex: number;
@@ -59,7 +69,7 @@ export class TableContent {
   empty?: boolean;
 }
 
-export abstract class NidocaComplexTable<T> extends LitElement {
+export abstract class NidocaComplexTable<T, S> extends LitElement {
   static styles = css`
     .header,
     .column {
@@ -89,8 +99,9 @@ export abstract class NidocaComplexTable<T> extends LitElement {
   @property()
   size: number = 10;
 
-  @property()
-  sort: string = '';
+  searchValues: KeyValueData[] = [];
+
+  sortValues: KeyValueData[] = [];
 
   @property()
   totalElements: number = 0;
@@ -111,7 +122,7 @@ export abstract class NidocaComplexTable<T> extends LitElement {
     this.search();
   }
 
-  abstract async searchRequest(): Promise<PageableContainer<T>>;
+  abstract getRemoteRepository(): BasicRemoteRepository<T, S>;
 
   protected getIgnoredKeys(): string[] {
     return [];
@@ -148,19 +159,21 @@ export abstract class NidocaComplexTable<T> extends LitElement {
   }
 
   search() {
-    this.searchRequest().then((pageableContainer: PageableContainer<T>) => {
-      console.log('searchRequest successfully, populate results...');
-      this.rows = this.toComplexeTableRows(pageableContainer.content);
-      this.keys = this.getKeys();
-      this.totalElements = Number(pageableContainer.totalElements);
-      this.totalPages = Number(pageableContainer.totalPages);
-      this.numberOfElements = Number(pageableContainer.numberOfElements);
-      let pageable = pageableContainer.pageable;
-      this.page = Number(pageable.pageNumber);
-      this.gridTemplateRows = this.getGridTemplateRows();
-      this.gridTemplateColumns = this.getGridTemplateColumns();
-      this.selectablePages = this.getSelectablePages();
-    });
+    this.getRemoteRepository()
+      .search(this.page, this.size, this.getSortQueryString(), this.getSearchQueryString())
+      .then((pageableContainer: PageableContainer<T>) => {
+        console.log('searchRequest successfully, populate results...');
+        this.rows = this.toComplexeTableRows(pageableContainer.content);
+        this.keys = this.getKeys();
+        this.totalElements = Number(pageableContainer.totalElements);
+        this.totalPages = Number(pageableContainer.totalPages);
+        this.numberOfElements = Number(pageableContainer.numberOfElements);
+        let pageable = pageableContainer.pageable;
+        this.page = Number(pageable.pageNumber);
+        this.gridTemplateRows = this.getGridTemplateRows();
+        this.gridTemplateColumns = this.getGridTemplateColumns();
+        this.selectablePages = this.getSelectablePages();
+      });
   }
 
   render() {
@@ -189,72 +202,10 @@ export abstract class NidocaComplexTable<T> extends LitElement {
             .gridTemplateRows="${this.gridTemplateRows}"
             .gridTemplateColumns="${this.gridTemplateColumns}"
           >
-            ${guard(
-              [this.keys],
-              () =>
-                html`
-                  ${repeat(
-                    this.keys,
-                    header => html`
-                      <nidoca-grid-container
-                        height="100%"
-                        class="header"
-                        .gridJustifyItems="${GridJustifyItems.START}"
-                        .gridAlignItems="${GridAlignItems.CENTER}"
-                        .gridTemplateRows="${['1fr']}"
-                        .gridTemplateColumns="${['1fr']}"
-                        ><nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
-                          <nidoca-typography .typographyType="${TypographyType.OVERLINE}"
-                            >${header}</nidoca-typography
-                          ></nidoca-spacer
-                        >
-                      </nidoca-grid-container>
-                    `
-                  )}
-                `
-            )}
-            ${guard(
-              [this.rows],
-              () =>
-                html`
-                  ${repeat(
-                    this.rows,
-                    (row: ComplexTableRow, rowIndex: number) => html`
-                      ${guard(
-                        row.rowModel,
-                        () =>
-                          html`
-                            ${repeat(
-                              row.rowModel,
-                              (column, columnIndex) => html`
-                                <nidoca-grid-container
-                                  height="100%"
-                                  class="column${rowIndex % 2 == 0 ? ' odd' : ' even'}"
-                                  @click="${() => {
-                                    this.columnClicked(rowIndex, columnIndex);
-                                  }}"
-                                  .gridJustifyItems="${GridJustifyItems.START}"
-                                  .gridAlignItems="${GridAlignItems.CENTER}"
-                                  .gridTemplateRows="${['1fr']}"
-                                  .gridTemplateColumns="${['1fr']}"
-                                >
-                                  <nidoca-spacer
-                                    spacerSize="${SpacerSize.MEDIUM}"
-                                    spacerAlignment="${SpacerAlignment.BOTH}"
-                                  >
-                                    ${column}
-                                  </nidoca-spacer>
-                                </nidoca-grid-container>
-                              `
-                            )}
-                          `
-                      )}
-                    `
-                  )}
-                `
-            )}
-          </nidoca-grid-container></nidoca-border
-        >
+            ${this.renderHeader()} ${this.renderSearchBar()} ${this.renderRows()}
+          </nidoca-grid-container>
+          ${this.renderNoRecord()}
+        </nidoca-border>
 
         ${this.renderPaging()}
       </nidoca-flex-container>
@@ -288,7 +239,7 @@ export abstract class NidocaComplexTable<T> extends LitElement {
 
   private getGridTemplateColumns() {
     if (this.emptyRows()) {
-      return this.gridTemplateRows;
+      return this.gridTemplateColumns;
     }
     let firstRow: any[] = this.rows[0].rowModel;
     let gridTemplateColumns: string[] = [];
@@ -337,6 +288,198 @@ export abstract class NidocaComplexTable<T> extends LitElement {
       }
     }
     return selectablePages;
+  }
+
+  private updateSearchValue(event: CustomEvent) {
+    let data: KeyValueData = event.detail;
+    this.getSearchValue(data.key).value = data.value;
+    this.search();
+  }
+
+  private getSearchValue(key: string) {
+    for (let data of this.searchValues) {
+      if (key == data.key) {
+        return data;
+      }
+    }
+    let keyValueData = new KeyValueData();
+    keyValueData.key = key;
+    keyValueData.value = '';
+    this.searchValues.push(keyValueData);
+    return keyValueData;
+  }
+
+  private getSearchQueryString() {
+    let whereClause = '';
+    this.searchValues.forEach(searchValue => {
+      if (BasicService.getUniqueInstance().isNotBlank(searchValue.value)) {
+        whereClause = whereClause
+          .concat(searchValue.key)
+          .concat('=')
+          .concat(BasicService.getUniqueInstance().getValue(searchValue.value, ''));
+      }
+    });
+    if (whereClause.length > 0) {
+      whereClause = '&'.concat(whereClause);
+    }
+    return whereClause;
+  }
+
+  private updateSortValue(key: string) {
+    let sortValue = this.getSortValue(key);
+    let oldValue: string = sortValue.value;
+    switch (oldValue) {
+      case '':
+        sortValue.value = ':desc;';
+        break;
+      case ':desc;':
+        sortValue.value = ':asc;';
+        break;
+      case ':asc;':
+        sortValue.value = '';
+        break;
+    }
+    this.search();
+  }
+
+  private getSortValue(key: string) {
+    for (let data of this.sortValues) {
+      if (key == data.key) {
+        return data;
+      }
+    }
+    let keyValueData = new KeyValueData();
+    keyValueData.key = key;
+    keyValueData.value = '';
+    this.sortValues.push(keyValueData);
+    return keyValueData;
+  }
+
+  private getSortQueryString(): string {
+    let sortQueryString: string = '';
+    this.sortValues.forEach(sortValue => {
+      if (BasicService.getUniqueInstance().isNotBlank(sortValue.value)) {
+        sortQueryString = sortQueryString.concat(sortValue.key).concat(sortValue.value);
+      }
+    });
+    return sortQueryString;
+  }
+
+  private renderSearchBar(): TemplateResult {
+    return html`
+      ${guard(
+        [this.keys],
+        () =>
+          html`
+            ${repeat(
+              this.keys,
+              key => html`
+                <nidoca-grid-container
+                  height="100%"
+                  class="header"
+                  .gridJustifyItems="${GridJustifyItems.START}"
+                  .gridAlignItems="${GridAlignItems.CENTER}"
+                  .gridTemplateRows="${['1fr']}"
+                  .gridTemplateColumns="${['1fr']}"
+                  ><nidoca-spacer spacerSize="${SpacerSize.LITTLE}" spacerAlignment="${SpacerAlignment.BOTH}">
+                    <nidoca-inputfield
+                      .value="${this.getSearchValue(key).value}"
+                      .inputfieldType="${InputfieldType.TEXT}"
+                      name="${key}"
+                      @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
+                        this.updateSearchValue(event);
+                      }}"
+                      >${key}</nidoca-inputfield
+                    ></nidoca-spacer
+                  >
+                </nidoca-grid-container>
+              `
+            )}
+          `
+      )}
+    `;
+  }
+
+  private renderHeader(): TemplateResult {
+    return html`
+      ${guard(
+        [this.keys],
+        () =>
+          html`
+            ${repeat(
+              this.keys,
+              key => html`
+                <nidoca-grid-container
+                  height="100%"
+                  class="header"
+                  .gridJustifyItems="${GridJustifyItems.START}"
+                  .gridAlignItems="${GridAlignItems.CENTER}"
+                  .gridTemplateRows="${['1fr']}"
+                  .gridTemplateColumns="${['1fr', 'min-content']}"
+                  ><nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
+                    <nidoca-typography .typographyType="${TypographyType.OVERLINE}"
+                      >${key}</nidoca-typography
+                    ></nidoca-spacer
+                  >
+                  <nidoca-icon
+                    icon="${this.getSortValue(key).value == ''
+                      ? 'remove'
+                      : this.getSortValue(key).value == ':asc;'
+                      ? 'keyboard_arrow_up'
+                      : 'keyboard_arrow_down'}"
+                    @nidoca-event-icon-clicked="${() => {
+                      this.updateSortValue(key);
+                    }}"
+                    clickable="true"
+                  ></nidoca-icon>
+                </nidoca-grid-container>
+              `
+            )}
+          `
+      )}
+    `;
+  }
+
+  private renderRows(): TemplateResult {
+    return html`
+      ${guard(
+        [this.rows],
+        () =>
+          html`
+            ${repeat(
+              this.rows,
+              (row: ComplexTableRow, rowIndex: number) => html`
+                ${guard(
+                  row.rowModel,
+                  () =>
+                    html`
+                      ${repeat(
+                        row.rowModel,
+                        (column, columnIndex) => html`
+                          <nidoca-grid-container
+                            height="100%"
+                            class="column${rowIndex % 2 == 0 ? ' odd' : ' even'}"
+                            @click="${() => {
+                              this.columnClicked(rowIndex, columnIndex);
+                            }}"
+                            .gridJustifyItems="${GridJustifyItems.START}"
+                            .gridAlignItems="${GridAlignItems.CENTER}"
+                            .gridTemplateRows="${['1fr']}"
+                            .gridTemplateColumns="${['1fr']}"
+                          >
+                            <nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
+                              ${column}
+                            </nidoca-spacer>
+                          </nidoca-grid-container>
+                        `
+                      )}
+                    `
+                )}
+              `
+            )}
+          `
+      )}
+    `;
   }
 
   private renderPaging(): TemplateResult {
@@ -457,6 +600,28 @@ export abstract class NidocaComplexTable<T> extends LitElement {
             ></nidoca-border> </nidoca-grid-container
         ></nidoca-border>
       </nidoca-spacer>
+    `;
+  }
+
+  renderNoRecord(): TemplateResult {
+    return html`
+      <nidoca-visible visibleType="${this.emptyRows() ? VisibleType.NORMAL : VisibleType.HIDE}">
+        <nidoca-flex-container
+          .flexContainerProperties="${[FlexContainerProperties.CONTAINER_WIDTH_100]}"
+          itemFlexBasisValue="auto"
+          .flexDirection="${FlexDirection.COLUMN}"
+          .flexWrap="${FlexWrap.WRAP}"
+          .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
+          .flexAlignItems="${FlexAlignItems.CENTER}"
+          .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
+        >
+          <nidoca-typography
+            .typographyType="${TypographyType.BUTTON}"
+            text="${I18nService.getUniqueInstance().getValue('no_entry_found')}"
+          ></nidoca-typography>
+          <nidoca-spacer .spacerSize="${SpacerSize.SMALL}" spacerAlignment="${SpacerAlignment.BOTH}"> </nidoca-spacer>
+        </nidoca-flex-container>
+      </nidoca-visible>
     `;
   }
 }
