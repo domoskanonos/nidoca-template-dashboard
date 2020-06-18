@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "lit-element": "^2.3.1",
-    "@domoskanonos/frontend-basis": "^1.0.196",
-    "@domoskanonos/nidoca-core": "^1.0.478",
+    "@domoskanonos/frontend-basis": "^1.0.201",
+    "@domoskanonos/nidoca-core": "^1.0.479",
     "@domoskanonos/nidoca-app": "^1.0.160"
   },
   "author": "",

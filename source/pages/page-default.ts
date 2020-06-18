@@ -10,7 +10,8 @@ import {
   FlexJustifyContent,
   FlexWrap,
   GridAlignItems,
-  GridJustifyItems, TypographyAlignment,
+  GridJustifyItems,
+  TypographyAlignment,
   VisibleType,
 } from '@domoskanonos/nidoca-core/lib';
 import {RouterService} from '@domoskanonos/frontend-basis/lib';
@@ -49,8 +50,8 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
       <nidoca-flex-container
         .flexContainerProperties="${[
           FlexContainerProperties.CONTAINER_WIDTH_100,
-      FlexContainerProperties.CONTAINER_HEIGHT_100,
-    ]}"
+          FlexContainerProperties.CONTAINER_HEIGHT_100,
+        ]}"
         .flexItemProperties="${[]}"
         flexItemBasisValue="auto"
         .flexDirection="${FlexDirection.COLUMN}"
@@ -93,76 +94,31 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
           <nidoca-typography .typographyType="${TypographyType.H4}">Dashboard</nidoca-typography>
         </nidoca-grid-container>
       </nidoca-box>
-
-      <nidoca-navigation-link
-        slot="links"
-        icon="dashboard"
-        text="${I18nService.getUniqueInstance().getValue('home')}"
-        href="dashboard"
-      ></nidoca-navigation-link>
+      ${this.renderLink(true, 'dashboard', 'home', 'dashboard')}
       <nidoca-navigation-section
         slot="links"
         text="${I18nService.getUniqueInstance().getValue('section_membership')}"
       ></nidoca-navigation-section>
-      <nidoca-navigation-link
-        slot="links"
-        icon="account_circle"
-        text="${I18nService.getUniqueInstance().getValue('login')}"
-        href="login"
-        .rendered="${!this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="how_to_reg"
-        text="${I18nService.getUniqueInstance().getValue('register')}"
-        href="register"
-        .rendered="${!this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="security"
-        text="${I18nService.getUniqueInstance().getValue('reset_password')}"
-        href="reset_password"
-        .rendered="${!this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="face"
-        text="${I18nService.getUniqueInstance().getValue('my-data')}"
-        href="mydata"
-        .rendered="${this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="power_settings_new"
-        text="${I18nService.getUniqueInstance().getValue('logout')}"
-        href="logout"
-        .rendered="${this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="vpn_key"
-        text="${I18nService.getUniqueInstance().getValue('change_password')}"
-        href="change_password"
-        .rendered="${this.isAuthenticated}"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-section
-        .rendered="${this.isAuthenticated}"
-        slot="links"
-        text="${I18nService.getUniqueInstance().getValue('section_search')}"
-      ></nidoca-navigation-section>
+      ${this.renderLink(!this.isAuthenticated, 'account_circle', 'login', 'login')}
+      ${this.renderLink(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
+      ${this.renderLink(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
+      ${this.renderLink(this.isAuthenticated, 'face', 'my-data', 'mydata')}
+      ${this.renderLink(this.isAuthenticated, 'power_settings_new', 'logout', 'logout')}
+      ${this.renderLink(this.isAuthenticated, 'vpn_key', 'change_password', 'change_password')}
       <nidoca-divider slot="links"></nidoca-divider>
+      ${this.renderLink(true, 'settings', 'settings', 'settings')}
+      ${this.renderLink(true, 'format_list_numbered', 'terms_of_use', 'terms_of_use')}
+    `;
+  }
+
+  private renderLink(rendered: boolean, icon: string, textKey: string, href: string): TemplateResult {
+    return html`
       <nidoca-navigation-link
         slot="links"
-        icon="settings"
-        text="${I18nService.getUniqueInstance().getValue('settings')}"
-        href="settings"
-      ></nidoca-navigation-link>
-      <nidoca-navigation-link
-        slot="links"
-        icon="format_list_numbered"
-        text="${I18nService.getUniqueInstance().getValue('terms_of_use')}"
-        href="terms_of_use"
+        icon="${icon}"
+        text="${I18nService.getUniqueInstance().getValue(textKey)}"
+        href="${href}"
+        .rendered="${rendered}"
       ></nidoca-navigation-link>
     `;
   }
@@ -190,7 +146,9 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
                 RouterService.getUniqueInstance().navigate(href);
               }}"
             ></nidoca-icon>
-            <nidoca-typography .typographyType="${TypographyType.CAPTION}" typographyAlignment="${TypographyAlignment.CENTER}"
+            <nidoca-typography
+              .typographyType="${TypographyType.CAPTION}"
+              typographyAlignment="${TypographyAlignment.CENTER}"
               >${I18nService.getUniqueInstance().getValue(i18nKey)}</nidoca-typography
             >
           </nidoca-grid-container>

@@ -1,13 +1,7 @@
-import {css, html, property, query, TemplateResult, LitElement} from 'lit-element';
+import {css, html, LitElement, property, TemplateResult} from 'lit-element';
 import {guard} from 'lit-html/directives/guard';
 import {repeat} from 'lit-html/directives/repeat';
-import {
-  AuthUser,
-  BasicRemoteRepository,
-  BasicService,
-  I18nService,
-  PageableContainer,
-} from '@domoskanonos/frontend-basis/lib';
+import {BasicRemoteRepository, BasicService, I18nService, PageableContainer} from '@domoskanonos/frontend-basis/lib';
 import {
   BorderProperties,
   BorderSize,
@@ -19,15 +13,16 @@ import {
   FlexWrap,
   GridAlignItems,
   GridJustifyItems,
+  InputfieldMode,
   InputfieldType,
   KeyValueData,
+  NidocaInputfield,
   ShadowType,
   SpacerAlignment,
   SpacerSize,
   TypographyType,
   VisibleType,
 } from '@domoskanonos/nidoca-core/lib';
-import {AuthUserRemoteRepository} from './repo/auth-user-repository';
 
 export interface NidocaEventComplexTableRow {
   rowIndex: number;
@@ -69,7 +64,7 @@ export class TableContent {
   empty?: boolean;
 }
 
-export abstract class NidocaComplexTable<T, S> extends LitElement {
+export abstract class NidocaComplexTable<T extends Object, S extends Object> extends LitElement {
   static styles = css`
     .header,
     .column {
@@ -124,6 +119,8 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
 
   abstract getRemoteRepository(): BasicRemoteRepository<T, S>;
 
+  abstract getI18nPrefix(): string;
+
   protected getIgnoredKeys(): string[] {
     return [];
   }
@@ -132,9 +129,8 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
     if (this.emptyRows()) {
       return this.keys;
     }
-    let firstRow: T = this.rows[0].model;
     let keys: string[] = [];
-    Object.keys(firstRow).forEach((key: string) => {
+    Object.keys(this.getType()).forEach((key: string) => {
       if (!this.getIgnoredKeys().includes(key)) {
         keys.push(key);
       }
@@ -146,13 +142,29 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
     let rowModel: any[] = [];
     Object.keys(model).forEach((key: string) => {
       if (!this.getIgnoredKeys().includes(key)) {
-        rowModel.push(
-          html`
-            <nidoca-typography .typographyType="${TypographyType.BODY2}"
-              >${BasicService.getUniqueInstance().beautifyText(model[key])}</nidoca-typography
-            >
-          `
-        );
+        let propertyTypeName = BasicService.getUniqueInstance().getPropertyTypeOf(model, key);
+        switch (propertyTypeName) {
+          case 'boolean':
+            rowModel.push(
+              html`
+                <nidoca-icon
+                  icon="${BasicService.getUniqueInstance().getPropertyValue(model, key) ? 'checked' : 'clear'}"
+                ></nidoca-icon>
+              `
+            );
+            break;
+          default:
+            rowModel.push(
+              html`
+                <nidoca-spacer spacerSize="${SpacerSize.SMALL}" spacerAlignment="${SpacerAlignment.BOTH}">
+                  <nidoca-typography .typographyType="${TypographyType.BODY2}"
+                    >${BasicService.getUniqueInstance().beautifyText(model[key])}</nidoca-typography
+                  ></nidoca-spacer
+                >
+              `
+            );
+            break;
+        }
       }
     });
     return rowModel;
@@ -241,9 +253,8 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
     if (this.emptyRows()) {
       return this.gridTemplateColumns;
     }
-    let firstRow: any[] = this.rows[0].rowModel;
     let gridTemplateColumns: string[] = [];
-    Object.keys(firstRow).forEach(() => {
+    Object.keys(this.getRowModel()).forEach(() => {
       gridTemplateColumns.push('auto');
     });
     return gridTemplateColumns;
@@ -384,14 +395,14 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
                   ><nidoca-spacer spacerSize="${SpacerSize.LITTLE}" spacerAlignment="${SpacerAlignment.BOTH}">
                     <nidoca-inputfield
                       .value="${this.getSearchValue(key).value}"
-                      .inputfieldType="${InputfieldType.TEXT}"
+                      .inputfieldType="${this.getInputfieldType(key)}"
+                      .inputfieldMode="${InputfieldMode.FILLED}"
                       name="${key}"
                       @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
                         this.updateSearchValue(event);
                       }}"
-                      >${key}</nidoca-inputfield
-                    ></nidoca-spacer
-                  >
+                    ></nidoca-inputfield
+                  ></nidoca-spacer>
                 </nidoca-grid-container>
               `
             )}
@@ -418,7 +429,7 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
                   .gridTemplateColumns="${['1fr', 'min-content']}"
                   ><nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
                     <nidoca-typography .typographyType="${TypographyType.OVERLINE}"
-                      >${key}</nidoca-typography
+                      >${I18nService.getUniqueInstance().getValue(this.getI18nPrefix().concat(key))}</nidoca-typography
                     ></nidoca-spacer
                   >
                   <nidoca-icon
@@ -467,9 +478,7 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
                             .gridTemplateRows="${['1fr']}"
                             .gridTemplateColumns="${['1fr']}"
                           >
-                            <nidoca-spacer spacerSize="${SpacerSize.MEDIUM}" spacerAlignment="${SpacerAlignment.BOTH}">
-                              ${column}
-                            </nidoca-spacer>
+                            ${column}
                           </nidoca-grid-container>
                         `
                       )}
@@ -623,5 +632,25 @@ export abstract class NidocaComplexTable<T, S> extends LitElement {
         </nidoca-flex-container>
       </nidoca-visible>
     `;
+  }
+
+  private getType() {
+    if (this.emptyRows()) {
+      return <T>{};
+    }
+    let firstRow: any[] = this.rows[0].model;
+    return firstRow;
+  }
+
+  private getRowModel() {
+    if (this.emptyRows()) {
+      return <T>{};
+    }
+    let firstRow: any[] = this.rows[0].rowModel;
+    return firstRow;
+  }
+
+  public getInputfieldType(propertyName: string): InputfieldType {
+    return NidocaInputfield.inputfieldTypeByPropertyName(this.getType(), propertyName);
   }
 }
