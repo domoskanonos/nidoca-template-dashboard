@@ -11,7 +11,7 @@ export class UserTable extends NidocaComplexTable<AuthUser, number> {
   }
 
   getI18nPrefix(): string {
-    return '';
+    return 'user_';
   }
 
   getPropertyTypes(): KeyValuePairs {
@@ -20,7 +20,9 @@ export class UserTable extends NidocaComplexTable<AuthUser, number> {
     propertyTypes.push(<KeyValuePair>{key: 'firstName', value: TypescriptType.STRING});
     propertyTypes.push(<KeyValuePair>{key: 'lastName', value: TypescriptType.STRING});
     propertyTypes.push(<KeyValuePair>{key: 'birthday', value: TypescriptType.DATE});
+    propertyTypes.push(<KeyValuePair>{key: 'city', value: TypescriptType.STRING});
     propertyTypes.push(<KeyValuePair>{key: 'active', value: TypescriptType.BOOLEAN});
+    propertyTypes.push(<KeyValuePair>{key: 'acceptTermsOfUse', value: TypescriptType.BOOLEAN});
     return propertyTypes;
   }
 
