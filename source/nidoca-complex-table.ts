@@ -1,7 +1,15 @@
 import {css, html, LitElement, property, TemplateResult} from 'lit-element';
 import {guard} from 'lit-html/directives/guard';
 import {repeat} from 'lit-html/directives/repeat';
-import {BasicRemoteRepository, BasicService, I18nService, PageableContainer} from '@domoskanonos/frontend-basis/lib';
+import {
+  BasicRemoteRepository,
+  BasicService,
+  I18nService,
+  KeyValuePair,
+  KeyValuePairs,
+  PageableContainer,
+  TypescriptType,
+} from '@domoskanonos/frontend-basis/lib';
 import {
   BorderProperties,
   BorderSize,
@@ -15,7 +23,6 @@ import {
   GridJustifyItems,
   InputfieldMode,
   InputfieldType,
-  KeyValueData,
   NidocaInputfield,
   ShadowType,
   SpacerAlignment,
@@ -83,7 +90,7 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
   rows: ComplexTableRow[] = [];
 
   @property()
-  keys: string[] = [];
+  keys: string[];
 
   @property()
   page: number = 0;
@@ -94,9 +101,9 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
   @property()
   size: number = 10;
 
-  searchValues: KeyValueData[] = [];
+  searchValues: KeyValuePair[] = [];
 
-  sortValues: KeyValueData[] = [];
+  sortValues: KeyValuePair[] = [];
 
   @property()
   totalElements: number = 0;
@@ -113,79 +120,19 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
   @property()
   gridTemplateColumns: string[] = ['1fr'];
 
-  protected firstUpdated(): void {
-    this.search();
+  constructor() {
+    super();
+    this.keys = this.getPropertyKeys();
   }
 
   abstract getRemoteRepository(): BasicRemoteRepository<T, S>;
 
   abstract getI18nPrefix(): string;
 
-  protected getIgnoredKeys(): string[] {
-    return [];
-  }
+  abstract getPropertyTypes(): KeyValuePairs;
 
-  protected getKeys() {
-    if (this.emptyRows()) {
-      return this.keys;
-    }
-    let keys: string[] = [];
-    Object.keys(this.getType()).forEach((key: string) => {
-      if (!this.getIgnoredKeys().includes(key)) {
-        keys.push(key);
-      }
-    });
-    return keys;
-  }
-
-  protected toRowModel(model: any): any[] {
-    let rowModel: any[] = [];
-    Object.keys(model).forEach((key: string) => {
-      if (!this.getIgnoredKeys().includes(key)) {
-        let propertyTypeName = BasicService.getUniqueInstance().getPropertyTypeOf(model, key);
-        switch (propertyTypeName) {
-          case 'boolean':
-            rowModel.push(
-              html`
-                <nidoca-icon
-                  icon="${BasicService.getUniqueInstance().getPropertyValue(model, key) ? 'checked' : 'clear'}"
-                ></nidoca-icon>
-              `
-            );
-            break;
-          default:
-            rowModel.push(
-              html`
-                <nidoca-spacer spacerSize="${SpacerSize.SMALL}" spacerAlignment="${SpacerAlignment.BOTH}">
-                  <nidoca-typography .typographyType="${TypographyType.BODY2}"
-                    >${BasicService.getUniqueInstance().beautifyText(model[key])}</nidoca-typography
-                  ></nidoca-spacer
-                >
-              `
-            );
-            break;
-        }
-      }
-    });
-    return rowModel;
-  }
-
-  search() {
-    this.getRemoteRepository()
-      .search(this.page, this.size, this.getSortQueryString(), this.getSearchQueryString())
-      .then((pageableContainer: PageableContainer<T>) => {
-        console.log('searchRequest successfully, populate results...');
-        this.rows = this.toComplexeTableRows(pageableContainer.content);
-        this.keys = this.getKeys();
-        this.totalElements = Number(pageableContainer.totalElements);
-        this.totalPages = Number(pageableContainer.totalPages);
-        this.numberOfElements = Number(pageableContainer.numberOfElements);
-        let pageable = pageableContainer.pageable;
-        this.page = Number(pageable.pageNumber);
-        this.gridTemplateRows = this.getGridTemplateRows();
-        this.gridTemplateColumns = this.getGridTemplateColumns();
-        this.selectablePages = this.getSelectablePages();
-      });
+  private getPropertyKeys(): string[] {
+    return this.getPropertyTypes().getKeys();
   }
 
   render() {
@@ -224,193 +171,6 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
     `;
   }
 
-  private toComplexeTableRows(models: T[]): ComplexTableRow[] {
-    let rows: ComplexTableRow[] = [];
-    if (models != null) {
-      for (let i = 0; i < models.length; i++) {
-        let row: ComplexTableRow = new ComplexTableRow();
-        row.model = models[i];
-        row.rowModel = this.toRowModel(row.model);
-        rows.push(row);
-      }
-    }
-    return rows;
-  }
-
-  private getGridTemplateRows() {
-    if (this.emptyRows()) {
-      return this.gridTemplateRows;
-    }
-    let gridTemplateRows: string[] = [];
-    gridTemplateRows.push('auto'); //headerRow
-    for (let i = 0; i < this.rows.length; i++) {
-      gridTemplateRows.push('auto');
-    }
-    return gridTemplateRows;
-  }
-
-  private getGridTemplateColumns() {
-    if (this.emptyRows()) {
-      return this.gridTemplateColumns;
-    }
-    let gridTemplateColumns: string[] = [];
-    Object.keys(this.getRowModel()).forEach(() => {
-      gridTemplateColumns.push('auto');
-    });
-    return gridTemplateColumns;
-  }
-
-  private emptyRows() {
-    return this.rows == null || this.rows.length == 0;
-  }
-
-  private columnClicked(rowIndex: number, columnIndex: number) {
-    console.log('column clicked, row: %s, column: %s ', rowIndex, columnIndex);
-    BasicService.getUniqueInstance().dispatchSimpleCustomEvent(this, 'nidoca-event-complex-table-column-clicked', <
-      NidocaEventComplexTableRow
-    >{
-      columnIndex: columnIndex,
-      rowIndex: rowIndex,
-      row: this.rows[rowIndex],
-    });
-  }
-
-  private previousPage() {
-    if (this.page > 0) {
-      this.page--;
-      this.search();
-    }
-  }
-
-  private nextPage() {
-    if (this.page + 1 < this.totalPages) {
-      this.page++;
-      this.search();
-    }
-  }
-
-  private getSelectablePages() {
-    let selectablePages: number[] = [];
-    let size: number = 4;
-    let startPage: number = this.page - (this.page == this.totalPages - 1 ? size : size - 1);
-    for (let i = startPage; i < this.totalPages; i++) {
-      if (i >= 0 && selectablePages.length <= size) {
-        selectablePages.push(i);
-      }
-    }
-    return selectablePages;
-  }
-
-  private updateSearchValue(event: CustomEvent) {
-    let data: KeyValueData = event.detail;
-    this.getSearchValue(data.key).value = data.value;
-    this.search();
-  }
-
-  private getSearchValue(key: string) {
-    for (let data of this.searchValues) {
-      if (key == data.key) {
-        return data;
-      }
-    }
-    let keyValueData = new KeyValueData();
-    keyValueData.key = key;
-    keyValueData.value = '';
-    this.searchValues.push(keyValueData);
-    return keyValueData;
-  }
-
-  private getSearchQueryString() {
-    let whereClause = '';
-    this.searchValues.forEach(searchValue => {
-      if (BasicService.getUniqueInstance().isNotBlank(searchValue.value)) {
-        whereClause = whereClause
-          .concat(searchValue.key)
-          .concat('=')
-          .concat(BasicService.getUniqueInstance().getValue(searchValue.value, ''));
-      }
-    });
-    if (whereClause.length > 0) {
-      whereClause = '&'.concat(whereClause);
-    }
-    return whereClause;
-  }
-
-  private updateSortValue(key: string) {
-    let sortValue = this.getSortValue(key);
-    let oldValue: string = sortValue.value;
-    switch (oldValue) {
-      case '':
-        sortValue.value = ':desc;';
-        break;
-      case ':desc;':
-        sortValue.value = ':asc;';
-        break;
-      case ':asc;':
-        sortValue.value = '';
-        break;
-    }
-    this.search();
-  }
-
-  private getSortValue(key: string) {
-    for (let data of this.sortValues) {
-      if (key == data.key) {
-        return data;
-      }
-    }
-    let keyValueData = new KeyValueData();
-    keyValueData.key = key;
-    keyValueData.value = '';
-    this.sortValues.push(keyValueData);
-    return keyValueData;
-  }
-
-  private getSortQueryString(): string {
-    let sortQueryString: string = '';
-    this.sortValues.forEach(sortValue => {
-      if (BasicService.getUniqueInstance().isNotBlank(sortValue.value)) {
-        sortQueryString = sortQueryString.concat(sortValue.key).concat(sortValue.value);
-      }
-    });
-    return sortQueryString;
-  }
-
-  private renderSearchBar(): TemplateResult {
-    return html`
-      ${guard(
-        [this.keys],
-        () =>
-          html`
-            ${repeat(
-              this.keys,
-              key => html`
-                <nidoca-grid-container
-                  height="100%"
-                  class="header"
-                  .gridJustifyItems="${GridJustifyItems.START}"
-                  .gridAlignItems="${GridAlignItems.CENTER}"
-                  .gridTemplateRows="${['1fr']}"
-                  .gridTemplateColumns="${['1fr']}"
-                  ><nidoca-spacer spacerSize="${SpacerSize.LITTLE}" spacerAlignment="${SpacerAlignment.BOTH}">
-                    <nidoca-inputfield
-                      .value="${this.getSearchValue(key).value}"
-                      .inputfieldType="${this.getInputfieldType(key)}"
-                      .inputfieldMode="${InputfieldMode.FILLED}"
-                      name="${key}"
-                      @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
-                        this.updateSearchValue(event);
-                      }}"
-                    ></nidoca-inputfield
-                  ></nidoca-spacer>
-                </nidoca-grid-container>
-              `
-            )}
-          `
-      )}
-    `;
-  }
-
   private renderHeader(): TemplateResult {
     return html`
       ${guard(
@@ -443,6 +203,38 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
                     }}"
                     clickable="true"
                   ></nidoca-icon>
+                </nidoca-grid-container>
+              `
+            )}
+          `
+      )}
+    `;
+  }
+
+  private renderSearchBar(): TemplateResult {
+    return html`
+      ${guard(
+        [this.keys],
+        () =>
+          html`
+            ${repeat(
+              this.keys,
+              key => html`
+                <nidoca-grid-container
+                  height="100%"
+                  class="header"
+                  .gridJustifyItems="${GridJustifyItems.START}"
+                  .gridAlignItems="${GridAlignItems.CENTER}"
+                  .gridTemplateRows="${['1fr']}"
+                  .gridTemplateColumns="${['1fr']}"
+                  @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
+                    this.updateSearchValue(event);
+                  }}"
+                  @nidoca-event-inputfield-change="${(event: CustomEvent) => {
+                    this.updateSearchValue(event);
+                  }}"
+                >
+                  ${this.renderSearchHeaderColumn(key)}
                 </nidoca-grid-container>
               `
             )}
@@ -634,12 +426,206 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
     `;
   }
 
-  private getType() {
-    if (this.emptyRows()) {
-      return <T>{};
+  private toComplexeTableRows(models: T[]): ComplexTableRow[] {
+    let rows: ComplexTableRow[] = [];
+    if (models != null) {
+      for (let i = 0; i < models.length; i++) {
+        let row: ComplexTableRow = new ComplexTableRow();
+        row.model = models[i];
+        row.rowModel = this.toRowModel(row.model);
+        rows.push(row);
+      }
     }
-    let firstRow: any[] = this.rows[0].model;
-    return firstRow;
+    return rows;
+  }
+
+  protected toRowModel(model: any): any[] {
+    let rowModel: any[] = [];
+    this.getPropertyTypes().items.forEach((keyValuePair: KeyValuePair) => {
+      let typescriptType: TypescriptType = keyValuePair.value;
+      let value: any = model[keyValuePair.key];
+      switch (typescriptType) {
+        case TypescriptType.BOOLEAN:
+          rowModel.push(
+            html`
+              <nidoca-icon icon="${value ? 'checked' : 'clear'}"></nidoca-icon>
+            `
+          );
+          break;
+        default:
+          rowModel.push(
+            html`
+              <nidoca-spacer spacerSize="${SpacerSize.SMALL}" spacerAlignment="${SpacerAlignment.BOTH}">
+                <nidoca-typography .typographyType="${TypographyType.BODY2}"
+                  >${BasicService.getUniqueInstance().beautifyText(value)}</nidoca-typography
+                ></nidoca-spacer
+              >
+            `
+          );
+          break;
+      }
+    });
+    return rowModel;
+  }
+
+  protected firstUpdated(): void {
+    this.search();
+  }
+
+  search() {
+    this.getRemoteRepository()
+      .search(this.page, this.size, this.getSortQueryString(), this.getSearchQueryString())
+      .then((pageableContainer: PageableContainer<T>) => {
+        console.log('searchRequest successfully, populate results...');
+        this.rows = this.toComplexeTableRows(pageableContainer.content);
+        this.totalElements = Number(pageableContainer.totalElements);
+        this.totalPages = Number(pageableContainer.totalPages);
+        this.numberOfElements = Number(pageableContainer.numberOfElements);
+        let pageable = pageableContainer.pageable;
+        this.page = Number(pageable.pageNumber);
+        this.gridTemplateRows = this.getGridTemplateRows();
+        this.gridTemplateColumns = this.getGridTemplateColumns();
+        this.selectablePages = this.getSelectablePages();
+      });
+  }
+
+  private getGridTemplateRows() {
+    if (this.emptyRows()) {
+      return this.gridTemplateRows;
+    }
+    let gridTemplateRows: string[] = [];
+    gridTemplateRows.push('auto'); //headerRow
+    for (let i = 0; i < this.rows.length; i++) {
+      gridTemplateRows.push('auto');
+    }
+    return gridTemplateRows;
+  }
+
+  private getGridTemplateColumns() {
+    if (this.emptyRows()) {
+      return this.gridTemplateColumns;
+    }
+    let gridTemplateColumns: string[] = [];
+    Object.keys(this.getRowModel()).forEach(() => {
+      gridTemplateColumns.push('auto');
+    });
+    return gridTemplateColumns;
+  }
+
+  private emptyRows() {
+    return this.rows == null || this.rows.length == 0;
+  }
+
+  private columnClicked(rowIndex: number, columnIndex: number) {
+    console.log('column clicked, row: %s, column: %s ', rowIndex, columnIndex);
+    BasicService.getUniqueInstance().dispatchSimpleCustomEvent(this, 'nidoca-event-complex-table-column-clicked', <
+      NidocaEventComplexTableRow
+    >{
+      columnIndex: columnIndex,
+      rowIndex: rowIndex,
+      row: this.rows[rowIndex],
+    });
+  }
+
+  private previousPage() {
+    if (this.page > 0) {
+      this.page--;
+      this.search();
+    }
+  }
+
+  private nextPage() {
+    if (this.page + 1 < this.totalPages) {
+      this.page++;
+      this.search();
+    }
+  }
+
+  private getSelectablePages() {
+    let selectablePages: number[] = [];
+    let size: number = 4;
+    let startPage: number = this.page - (this.page == this.totalPages - 1 ? size : size - 1);
+    for (let i = startPage; i < this.totalPages; i++) {
+      if (i >= 0 && selectablePages.length <= size) {
+        selectablePages.push(i);
+      }
+    }
+    return selectablePages;
+  }
+
+  private updateSearchValue(event: CustomEvent) {
+    let data: KeyValuePair = event.detail;
+    this.getSearchValue(data.key).value = data.value;
+    this.search();
+  }
+
+  private getSearchValue(key: string) {
+    for (let data of this.searchValues) {
+      if (key == data.key) {
+        return data;
+      }
+    }
+    let keyValueData = <KeyValuePair>{};
+    keyValueData.key = key;
+    keyValueData.value = '';
+    this.searchValues.push(keyValueData);
+    return keyValueData;
+  }
+
+  private getSearchQueryString() {
+    let whereClause = '';
+    this.searchValues.forEach(searchValue => {
+      if (BasicService.getUniqueInstance().isNotBlank(searchValue.value)) {
+        whereClause = whereClause
+          .concat(searchValue.key)
+          .concat('=')
+          .concat(BasicService.getUniqueInstance().getValue(searchValue.value, ''));
+      }
+    });
+    if (whereClause.length > 0) {
+      whereClause = '&'.concat(whereClause);
+    }
+    return whereClause;
+  }
+
+  private updateSortValue(key: string) {
+    let sortValue = this.getSortValue(key);
+    let oldValue: string = sortValue.value;
+    switch (oldValue) {
+      case '':
+        sortValue.value = ':desc;';
+        break;
+      case ':desc;':
+        sortValue.value = ':asc;';
+        break;
+      case ':asc;':
+        sortValue.value = '';
+        break;
+    }
+    this.search();
+  }
+
+  private getSortValue(key: string) {
+    for (let data of this.sortValues) {
+      if (key == data.key) {
+        return data;
+      }
+    }
+    let keyValuePair = <KeyValuePair>{};
+    keyValuePair.key = key;
+    keyValuePair.value = '';
+    this.sortValues.push(keyValuePair);
+    return keyValuePair;
+  }
+
+  private getSortQueryString(): string {
+    let sortQueryString: string = '';
+    this.sortValues.forEach(sortValue => {
+      if (BasicService.getUniqueInstance().isNotBlank(sortValue.value)) {
+        sortQueryString = sortQueryString.concat(sortValue.key).concat(sortValue.value);
+      }
+    });
+    return sortQueryString;
   }
 
   private getRowModel() {
@@ -651,6 +637,46 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
   }
 
   public getInputfieldType(propertyName: string): InputfieldType {
-    return NidocaInputfield.inputfieldTypeByPropertyName(this.getType(), propertyName);
+    return NidocaInputfield.inputfieldTypeByTypescriptType(this.getPropertyTypes().getItem(propertyName)?.value);
+  }
+
+  private renderSearchHeaderColumn(key: string) {
+    let typescriptType: TypescriptType = this.getPropertyTypes().getItem(key)?.value;
+    switch (typescriptType) {
+      case TypescriptType.BOOLEAN:
+        return html`
+          <nidoca-inputfield
+            inputfieldType="${InputfieldType.COMBOBOX}"
+            name="${key}"
+            .value="${this.getSearchValue(key).value}"
+            .options="${[
+              <KeyValuePair>{
+                key: '',
+                value: I18nService.getUniqueInstance().getValue('all'),
+              },
+              <KeyValuePair>{
+                key: 'true',
+                value: I18nService.getUniqueInstance().getValue('yes'),
+              },
+              <KeyValuePair>{
+                key: 'false',
+                value: I18nService.getUniqueInstance().getValue('no'),
+              },
+            ]}"
+            label="${I18nService.getUniqueInstance().getValue('sss')}"
+          ></nidoca-inputfield>
+        `;
+      default:
+        return html`
+          <nidoca-spacer spacerSize="${SpacerSize.LITTLE}" spacerAlignment="${SpacerAlignment.BOTH}">
+            <nidoca-inputfield
+              .value="${this.getSearchValue(key).value}"
+              .inputfieldType="${this.getInputfieldType(key)}"
+              .inputfieldMode="${InputfieldMode.FILLED}"
+              name="${key}"
+            ></nidoca-inputfield
+          ></nidoca-spacer>
+        `;
+    }
   }
 }

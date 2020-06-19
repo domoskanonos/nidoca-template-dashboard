@@ -13,6 +13,7 @@ import {NidocaI18NSelector} from '@domoskanonos/nidoca-app';
 
 import {HttpResponseCodeInterceptor, HttpResponseCode} from '@domoskanonos/frontend-basis';
 import {PageService} from './service/page-service';
+import {UnauthorizedHttpResponseCodeInterceptor} from '@domoskanonos/frontend-basis/lib';
 
 @customElement('app-root')
 export class App extends NidocaAbstractApp {
@@ -36,18 +37,7 @@ export class App extends NidocaAbstractApp {
 
   async preRender(): Promise<void> {
     HttpClientService.getUniqueInstance().defaultRequest.cors = HttpClientCorsMode.CORS;
-
-    let httpResponseCodeInterceptor: HttpResponseCodeInterceptor = new (class extends HttpResponseCodeInterceptor {
-      getCode(): HttpResponseCode {
-        return HttpResponseCode.UNAUTHORIZED;
-      }
-
-      run(): void {
-        SecureService.getUniqueInstance().setAuthenticated(false);
-        RouterService.getUniqueInstance().navigate('login');
-      }
-    })();
-    HttpClientService.getUniqueInstance().addHttpResponseCodeInterceptor(httpResponseCodeInterceptor);
+    HttpClientService.getUniqueInstance().addHttpResponseCodeInterceptor(new UnauthorizedHttpResponseCodeInterceptor('login'));
 
     let config = HttpClientService.getUniqueInstance().config;
     //config.baseURL = 'http://85.235.67.10:8099';

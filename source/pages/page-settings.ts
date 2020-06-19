@@ -1,8 +1,7 @@
-import {customElement, html, LitElement, TemplateResult} from 'lit-element';
+import {customElement, html, TemplateResult} from 'lit-element';
 import {
   TypographyType,
   FlexJustifyContent,
-  KeyValueData,
   SpacerSize,
   SpacerAlignment,
   FlexAlignItems,
@@ -10,7 +9,7 @@ import {
 } from '@domoskanonos/nidoca-core';
 import {I18nService, LanguageKey} from '@domoskanonos/frontend-basis';
 import {DividerType} from '@domoskanonos/nidoca-core/lib';
-import {RouterService} from '@domoskanonos/frontend-basis/lib';
+import {KeyValuePair, RouterService} from '@domoskanonos/frontend-basis/lib';
 import {DefaultPage} from './page-default';
 
 @customElement('page-settings')
@@ -62,14 +61,14 @@ export class PageSettings extends DefaultPage {
           label="${I18nService.getUniqueInstance().getValue('component_i18n_label')}"
           langKey="${I18nService.getUniqueInstance().getLanguage()}"
           .languages="${[
-            <KeyValueData>{
-              key: LanguageKey.DE,
-              value: I18nService.getUniqueInstance().getValue('component_i18n_de'),
-            },
-            <KeyValueData>{
-              key: LanguageKey.EN,
-              value: I18nService.getUniqueInstance().getValue('component_i18n_en'),
-            },
+      <KeyValuePair>{
+        key: LanguageKey.DE,
+        value: I18nService.getUniqueInstance().getValue('component_i18n_de'),
+      },
+      <KeyValuePair>{
+        key: LanguageKey.EN,
+        value: I18nService.getUniqueInstance().getValue('component_i18n_en'),
+      },
           ]}"
         ></nidoca-i18n-selector>
       </nidoca-flex-container>
