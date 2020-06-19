@@ -17,6 +17,9 @@ export class UserTable extends NidocaComplexTable<AuthUser, number> {
   getPropertyTypes(): KeyValuePairs {
     let propertyTypes: KeyValuePairs = new KeyValuePairs();
     propertyTypes.push(<KeyValuePair>{key: 'email', value: TypescriptType.STRING});
+    propertyTypes.push(<KeyValuePair>{key: 'firstName', value: TypescriptType.STRING});
+    propertyTypes.push(<KeyValuePair>{key: 'lastName', value: TypescriptType.STRING});
+    propertyTypes.push(<KeyValuePair>{key: 'birthday', value: TypescriptType.DATE});
     propertyTypes.push(<KeyValuePair>{key: 'active', value: TypescriptType.BOOLEAN});
     return propertyTypes;
   }

@@ -19,6 +19,7 @@ import {
   FlexDirection,
   FlexJustifyContent,
   FlexWrap,
+  FormProperties,
   GridAlignItems,
   GridJustifyItems,
   InputfieldMode,
@@ -120,6 +121,9 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
   @property()
   gridTemplateColumns: string[] = ['1fr'];
 
+  @property()
+  showDecision: boolean = false;
+
   constructor() {
     super();
     this.keys = this.getPropertyKeys();
@@ -137,6 +141,8 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
 
   render() {
     return html`
+      ${this.renderSearchBar()}
+
       <nidoca-flex-container
         .flexContainerProperties="${[
           FlexContainerProperties.CONTAINER_WIDTH_100,
@@ -161,13 +167,15 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
             .gridTemplateRows="${this.gridTemplateRows}"
             .gridTemplateColumns="${this.gridTemplateColumns}"
           >
-            ${this.renderHeader()} ${this.renderSearchBar()} ${this.renderRows()}
+            ${this.renderHeader()} ${this.renderRows()}
           </nidoca-grid-container>
           ${this.renderNoRecord()}
         </nidoca-border>
 
         ${this.renderPaging()}
       </nidoca-flex-container>
+
+      <nidoca-decision-dialog .showDialog="${this.showDecision}"></nidoca-decision-dialog>
     `;
   }
 
@@ -213,33 +221,28 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
 
   private renderSearchBar(): TemplateResult {
     return html`
-      ${guard(
-        [this.keys],
-        () =>
-          html`
-            ${repeat(
-              this.keys,
-              key => html`
-                <nidoca-grid-container
-                  height="100%"
-                  class="header"
-                  .gridJustifyItems="${GridJustifyItems.START}"
-                  .gridAlignItems="${GridAlignItems.CENTER}"
-                  .gridTemplateRows="${['1fr']}"
-                  .gridTemplateColumns="${['1fr']}"
-                  @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
-                    this.updateSearchValue(event);
-                  }}"
-                  @nidoca-event-inputfield-change="${(event: CustomEvent) => {
-                    this.updateSearchValue(event);
-                  }}"
-                >
-                  ${this.renderSearchHeaderColumn(key)}
-                </nidoca-grid-container>
-              `
-            )}
-          `
-      )}
+      <nidoca-form
+        .formProperties="${[FormProperties.ROW_LAYOUT]}"
+        @nidoca-event-inputfield-keyup="${(event: CustomEvent) => {
+          this.updateSearchValue(event);
+        }}"
+        @nidoca-event-inputfield-change="${(event: CustomEvent) => {
+          this.updateSearchValue(event);
+        }}"
+      >
+        ${guard(
+          [this.keys],
+          () =>
+            html`
+              ${repeat(
+                this.keys,
+                key => html`
+                  ${this.renderSearchColumn(key)}
+                `
+              )}
+            `
+        )}
+      </nidoca-form>
     `;
   }
 
@@ -640,13 +643,37 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
     return NidocaInputfield.inputfieldTypeByTypescriptType(this.getPropertyTypes().getItem(propertyName)?.value);
   }
 
-  private renderSearchHeaderColumn(key: string) {
+  private renderSearchColumn(key: string) {
     let typescriptType: TypescriptType = this.getPropertyTypes().getItem(key)?.value;
     switch (typescriptType) {
+      case TypescriptType.DATE:
+        return html`
+          <nidoca-container>
+            <nidoca-typography
+              typographyType="${TypographyType.BODY1}"
+              text="${I18nService.getUniqueInstance().getValue(this.getI18nPrefix().concat(key))}"
+            ></nidoca-typography>
+
+            <nidoca-inputfield
+              .value="${new Date()}"
+              .inputfieldType="${InputfieldType.DATE}"
+              .inputfieldMode="${InputfieldMode.FILLED}"
+              name="firstDate"
+            ></nidoca-inputfield>
+            <nidoca-inputfield
+              .value="${new Date()}"
+              .inputfieldType="${InputfieldType.DATE}"
+              .inputfieldMode="${InputfieldMode.FILLED}"
+              name="secondDate"
+            ></nidoca-inputfield>
+          </nidoca-container>
+        `;
       case TypescriptType.BOOLEAN:
         return html`
           <nidoca-inputfield
+            label="${I18nService.getUniqueInstance().getValue(this.getI18nPrefix().concat(key))}"
             inputfieldType="${InputfieldType.COMBOBOX}"
+            .inputfieldMode="${InputfieldMode.FILLED}"
             name="${key}"
             .value="${this.getSearchValue(key).value}"
             .options="${[
@@ -663,19 +690,17 @@ export abstract class NidocaComplexTable<T extends Object, S extends Object> ext
                 value: I18nService.getUniqueInstance().getValue('no'),
               },
             ]}"
-            label="${I18nService.getUniqueInstance().getValue('sss')}"
           ></nidoca-inputfield>
         `;
       default:
         return html`
-          <nidoca-spacer spacerSize="${SpacerSize.LITTLE}" spacerAlignment="${SpacerAlignment.BOTH}">
-            <nidoca-inputfield
-              .value="${this.getSearchValue(key).value}"
-              .inputfieldType="${this.getInputfieldType(key)}"
-              .inputfieldMode="${InputfieldMode.FILLED}"
-              name="${key}"
-            ></nidoca-inputfield
-          ></nidoca-spacer>
+          <nidoca-inputfield
+            label="${I18nService.getUniqueInstance().getValue(this.getI18nPrefix().concat(key))}"
+            .value="${this.getSearchValue(key).value}"
+            .inputfieldType="${this.getInputfieldType(key)}"
+            .inputfieldMode="${InputfieldMode.FILLED}"
+            name="${key}"
+          ></nidoca-inputfield>
         `;
     }
   }

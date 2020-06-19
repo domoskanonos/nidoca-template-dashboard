@@ -7,6 +7,7 @@ I18nService.getUniqueInstance().addData(messageAppDE);
 I18nService.getUniqueInstance().addData(messageAppEN, LanguageKey.EN);
 
 import './components/user-table';
+import './nidoca-date-between-dialog';
 
 import './pages/page-dashboard';
 import './pages/page-settings';
