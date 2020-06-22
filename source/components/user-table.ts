@@ -1,8 +1,8 @@
 import {customElement} from 'lit-element';
-import {NidocaComplexTable} from '../nidoca-complex-table';
 import {AuthUserRemoteRepository} from '../repo/auth-user-repository';
 import {AuthUser, BasicRemoteRepository} from '@domoskanonos/frontend-basis';
 import {TypescriptType, KeyValuePair, KeyValuePairs} from '@domoskanonos/frontend-basis/lib';
+import {NidocaComplexTable} from '@domoskanonos/nidoca-app/lib';
 
 @customElement('user-table')
 export class UserTable extends NidocaComplexTable<AuthUser, number> {

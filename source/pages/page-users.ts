@@ -12,7 +12,7 @@ import {
   TypographyType,
 } from '@domoskanonos/nidoca-core/lib';
 import {I18nService} from '@domoskanonos/frontend-basis/lib';
-import {NidocaEventComplexTableRow} from '../nidoca-complex-table';
+import { NidocaEventComplexTableRow } from '@domoskanonos/nidoca-app';
 
 @customElement('page-users')
 export class PageUsers extends DefaultPage {
