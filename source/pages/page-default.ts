@@ -54,8 +54,8 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         ]}"
         .flexItemProperties="${[]}"
         flexItemBasisValue="auto"
-        .flexDirection="${FlexDirection.COLUMN}"
-        .flexWrap="${FlexWrap.WRAP}"
+        .flexDirection="${FlexDirection.ROW}"
+        .flexWrap="${FlexWrap.NO_WRAP}"
         .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
         .flexAlignItems="${FlexAlignItems.CENTER}"
         .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
@@ -67,6 +67,8 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
         ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
         ${this.renderBottomContentMenuIcon(true, 'backup', 'upload', 'upload')}
+        ${this.renderBottomContentMenuIcon(true, 'code', 'barcode', 'barcode')}
+        ${this.renderBottomContentMenuIcon(true, 'camera', 'camera', 'camera')}
         ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'power_settings_new', 'logout', 'logout')}
       </nidoca-flex-container>
     `;
@@ -131,11 +133,18 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
   ): TemplateResult {
     return isAuthenticated
       ? html`
-          <nidoca-grid-container
-            .gridJustifyItems="${GridJustifyItems.CENTER}"
-            .gridAlignItems="${GridAlignItems.CENTER}"
-            .gridTemplateRows="${['1fr', '1fr']}"
-            .gridTemplateColumns="${['auto']}"
+          <nidoca-flex-container
+            .flexContainerProperties="${[
+              FlexContainerProperties.CONTAINER_WIDTH_100,
+              FlexContainerProperties.CONTAINER_HEIGHT_100,
+            ]}"
+            .flexItemProperties="${[]}"
+            flexItemBasisValue="auto"
+            .flexDirection="${FlexDirection.COLUMN}"
+            .flexWrap="${FlexWrap.WRAP}"
+            .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
+            .flexAlignItems="${FlexAlignItems.CENTER}"
+            .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
           >
             <nidoca-icon
               .withIconSpace="${false}"
@@ -151,7 +160,7 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
               typographyAlignment="${TypographyAlignment.CENTER}"
               >${I18nService.getUniqueInstance().getValue(i18nKey)}</nidoca-typography
             >
-          </nidoca-grid-container>
+          </nidoca-flex-container>
         `
       : html``;
   }

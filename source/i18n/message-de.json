@@ -31,6 +31,8 @@
   "register_ok": "Registrierungsbestätigung",
   "reset_password": "Passwort zurücksetzen",
   "change_password": "Passwort ändern",
+  "barcode": "Barcode",
+  "camera": "Kamera",
   "nidoca-inputfield-switch-error-should-true": "Bitte akzeptieren Sie die Nutzungsbedingungen",
   "nidoca-inputfield-file-error-max-size-reached": "Eine von Ihnen ausgewählte Datei ist zu groß",
   "nidoca-inputfield-file-error-allowed-file-type": "Eine von Ihnen ausgewählte Datei ist vom falschen Typ",
