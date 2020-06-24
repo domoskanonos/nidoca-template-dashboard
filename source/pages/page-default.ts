@@ -55,21 +55,21 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
         .flexItemProperties="${[]}"
         flexItemBasisValue="auto"
         .flexDirection="${FlexDirection.ROW}"
-        .flexWrap="${FlexWrap.NO_WRAP}"
+        .flexWrap="${FlexWrap.WRAP}"
         .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
         .flexAlignItems="${FlexAlignItems.CENTER}"
         .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
       >
-        ${this.renderBottomContentMenuIcon(true, 'dashboard', 'home', 'home')}
-        ${this.renderBottomContentMenuIcon(true, 'people', 'users', 'users')}
-        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'account_circle', 'login', 'login')}
-        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
-        ${this.renderBottomContentMenuIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
-        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
-        ${this.renderBottomContentMenuIcon(true, 'backup', 'upload', 'upload')}
-        ${this.renderBottomContentMenuIcon(true, 'code', 'barcode', 'barcode')}
-        ${this.renderBottomContentMenuIcon(true, 'camera', 'camera', 'camera')}
-        ${this.renderBottomContentMenuIcon(this.isAuthenticated, 'power_settings_new', 'logout', 'logout')}
+        ${this.renderActionIcon(true, 'dashboard', 'home', 'home')}
+        ${this.renderActionIcon(true, 'people', 'users', 'users')}
+        ${this.renderActionIcon(!this.isAuthenticated, 'account_circle', 'login', 'login')}
+        ${this.renderActionIcon(!this.isAuthenticated, 'how_to_reg', 'register', 'register')}
+        ${this.renderActionIcon(!this.isAuthenticated, 'security', 'reset_password', 'reset_password')}
+        ${this.renderActionIcon(this.isAuthenticated, 'face', 'my-data', 'mydata')}
+        ${this.renderActionIcon(true, 'backup', 'upload', 'upload')}
+        ${this.renderActionIcon(true, 'code', 'barcode', 'barcode')}
+        ${this.renderActionIcon(true, 'camera', 'camera', 'camera')}
+        ${this.renderActionIcon(this.isAuthenticated, 'power_settings_new', 'logout', 'logout')}
       </nidoca-flex-container>
     `;
   }
@@ -125,7 +125,7 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
     `;
   }
 
-  private renderBottomContentMenuIcon(
+  private renderActionIcon(
     isAuthenticated: boolean,
     icon: string,
     i18nKey: string,
@@ -133,34 +133,15 @@ export abstract class DefaultPage extends NidocaDashboardTemplate {
   ): TemplateResult {
     return isAuthenticated
       ? html`
-          <nidoca-flex-container
-            .flexContainerProperties="${[
-              FlexContainerProperties.CONTAINER_WIDTH_100,
-              FlexContainerProperties.CONTAINER_HEIGHT_100,
-            ]}"
-            .flexItemProperties="${[]}"
-            flexItemBasisValue="auto"
-            .flexDirection="${FlexDirection.COLUMN}"
-            .flexWrap="${FlexWrap.WRAP}"
-            .flexJustifyContent="${FlexJustifyContent.SPACE_AROUND}"
-            .flexAlignItems="${FlexAlignItems.CENTER}"
-            .flexAlignContent="${FlexAlignContent.SPACE_AROUND}"
+          <nidoca-icon-action
+            @nidoca-event-icon-clicked="${() => {
+              RouterService.getUniqueInstance().navigate(href);
+            }}"
+            text="${I18nService.getUniqueInstance().getValue(i18nKey)}"
+            icon="${icon}"
+            .active="${RouterService.getUniqueInstance().getCurrentPage() == href}"
           >
-            <nidoca-icon
-              .withIconSpace="${false}"
-              icon="${icon}"
-              title="${I18nService.getUniqueInstance().getValue(i18nKey)}"
-              clickable="true"
-              @nidoca-event-icon-clicked="${() => {
-                RouterService.getUniqueInstance().navigate(href);
-              }}"
-            ></nidoca-icon>
-            <nidoca-typography
-              .typographyType="${TypographyType.CAPTION}"
-              typographyAlignment="${TypographyAlignment.CENTER}"
-              >${I18nService.getUniqueInstance().getValue(i18nKey)}</nidoca-typography
-            >
-          </nidoca-flex-container>
+          </nidoca-icon-action>
         `
       : html``;
   }
