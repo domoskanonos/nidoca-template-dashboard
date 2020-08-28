@@ -9,8 +9,6 @@ I18nService.getUniqueInstance().addData(messageAppEN, LanguageKey.EN);
 import './components/user-table';
 
 
-import './nidoca-icon-action';
-
 import './pages/page-dashboard';
 import './pages/page-settings';
 import './pages/page-register';
